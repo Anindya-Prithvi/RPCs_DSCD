@@ -20,10 +20,10 @@ class MaintainStub(object):
                 request_serializer=registry__server__pb2.Server_information.SerializeToString,
                 response_deserializer=registry__server__pb2.Success.FromString,
                 )
-        self.GetServerList = channel.unary_stream(
+        self.GetServerList = channel.unary_unary(
                 '/Maintain/GetServerList',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=registry__server__pb2.Server_information.FromString,
+                response_deserializer=registry__server__pb2.Server_book.FromString,
                 )
 
 
@@ -50,10 +50,10 @@ def add_MaintainServicer_to_server(servicer, server):
                     request_deserializer=registry__server__pb2.Server_information.FromString,
                     response_serializer=registry__server__pb2.Success.SerializeToString,
             ),
-            'GetServerList': grpc.unary_stream_rpc_method_handler(
+            'GetServerList': grpc.unary_unary_rpc_method_handler(
                     servicer.GetServerList,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=registry__server__pb2.Server_information.SerializeToString,
+                    response_serializer=registry__server__pb2.Server_book.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -93,8 +93,8 @@ class Maintain(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/Maintain/GetServerList',
+        return grpc.experimental.unary_unary(request, target, '/Maintain/GetServerList',
             google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            registry__server__pb2.Server_information.FromString,
+            registry__server__pb2.Server_book.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

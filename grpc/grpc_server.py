@@ -23,27 +23,33 @@ import registry_server_pb2_grpc
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-registered = registry_server_pb2.Server_Book()
+registered = registry_server_pb2.Server_book()
+server_lim = 5
 
 class Maintain(registry_server_pb2_grpc.MaintainServicer):
 
     def RegisterServer(self, request, context):
         # print(request, context.__dict__)
-        logger.info(context.peer());
-        logger.info(str(request))
+        # logger.info(context.peer()); no need imo, there will be a seperate server running for server
+        # help(context)
+        
+        # logger.info(request)
+        
         new_server = registered.servers.add()
-        new_server = request
+        new_server.name = "lol"
+        new_server.addr = request.addr
         return registry_server_pb2.Success(value=True)
 
     def GetServerList(self, request, context):
         # print(request, context.__dict__)
-        logger.info(context.peer());
-        logger.info(str(request))
-        return registered.servers
+        # logger.info(context.peer());
+        book_of_5 = registry_server_pb2.Server_book()
+        book_of_5.servers.extend(registered.servers[:5])
+        return book_of_5
 
 
 def serve():
-    port = '50051'
+    port = '21337'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     registry_server_pb2_grpc.add_MaintainServicer_to_server(Maintain(), server)
     server.add_insecure_port('[::]:' + port)
