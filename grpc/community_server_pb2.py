@@ -6,6 +6,7 @@ from google.protobuf.internal import builder as _builder
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import symbol_database as _symbol_database
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -14,15 +15,17 @@ _sym_db = _symbol_database.Default()
 import registry_server_pb2 as registry__server__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x16\x63ommunity_server.proto\x1a\x15registry_server.proto\"1\n\tClientele\x12$\n\x07\x63lients\x18\x01 \x03(\x0b\x32\x13.Client_information2m\n\x10\x43lientManagement\x12+\n\nJoinServer\x12\x13.Client_information\x1a\x08.Success\x12,\n\x0bLeaveServer\x12\x13.Client_information\x1a\x08.Successb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\x16\x63ommunity_server.proto\x1a\x15registry_server.proto"1\n\tClientele\x12$\n\x07\x63lients\x18\x01 \x03(\x0b\x32\x13.Client_information2m\n\x10\x43lientManagement\x12+\n\nJoinServer\x12\x13.Client_information\x1a\x08.Success\x12,\n\x0bLeaveServer\x12\x13.Client_information\x1a\x08.Successb\x06proto3'
+)
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'community_server_pb2', globals())
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "community_server_pb2", globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
-  DESCRIPTOR._options = None
-  _CLIENTELE._serialized_start=49
-  _CLIENTELE._serialized_end=98
-  _CLIENTMANAGEMENT._serialized_start=100
-  _CLIENTMANAGEMENT._serialized_end=209
+    DESCRIPTOR._options = None
+    _CLIENTELE._serialized_start = 49
+    _CLIENTELE._serialized_end = 98
+    _CLIENTMANAGEMENT._serialized_start = 100
+    _CLIENTMANAGEMENT._serialized_end = 209
 # @@protoc_insertion_point(module_scope)

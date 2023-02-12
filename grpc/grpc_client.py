@@ -13,14 +13,21 @@ OPTIONS = """Options:
     4. Get article
 Enter your choice[1-4]: """
 
-def join_or_leave_Server(logger: logging.Logger, client_id: uuid.UUID, join:bool=True):
+
+def join_or_leave_Server(
+    logger: logging.Logger, client_id: uuid.UUID, join: bool = True
+):
     addr = input("Enter address of server [dom:port]: ")
     with grpc.insecure_channel(addr) as channel:
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         if join:
-            response = stub.JoinServer(registry_server_pb2.Client_information(id=str(client_id)))
+            response = stub.JoinServer(
+                registry_server_pb2.Client_information(id=str(client_id))
+            )
         else:
-            response = stub.LeaveServer(registry_server_pb2.Client_information(id=str(client_id)))
+            response = stub.LeaveServer(
+                registry_server_pb2.Client_information(id=str(client_id))
+            )
         logger.info(f'Received status: {"SUCCESS" if response.value else "FAILURE"}')
 
 
@@ -34,6 +41,7 @@ def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
             "Received server list:\n"
             + "\n".join([f"{i.name}-{i.addr}" for i in response.servers])
         )
+
 
 def run(client_id: uuid.UUID, logger: logging.Logger):
     print("Starting client, EOF is EOP")
@@ -57,6 +65,7 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
         # generic exception
         except Exception as e:
             print("Error: ", e)
+
 
 if __name__ == "__main__":
     logging.basicConfig()

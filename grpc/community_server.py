@@ -10,25 +10,30 @@ import community_server_pb2_grpc
 CLIENTELE = community_server_pb2.Clientele()
 MAXCLIENTS = 5
 
+
 class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
     def JoinServer(self, request, context):
-        # TODO: add limits on joining
         logger.info(f"Join request from {request.id}")
+        # Check if server is full
         if len(CLIENTELE.clients) >= MAXCLIENTS:
             return registry_server_pb2.Success(value=False)
         # Assumption duplicacy of client rejected
         if registry_server_pb2.Client_information(id=request.id) in CLIENTELE.clients:
             return registry_server_pb2.Success(value=False)
+        # Add client to server
         CLIENTELE.clients.append(registry_server_pb2.Client_information(id=request.id))
         return registry_server_pb2.Success(value=True)
 
     def LeaveServer(self, request, context):
         logger.info(f"Leave request from {request.id}")
         if registry_server_pb2.Client_information(id=request.id) in CLIENTELE.clients:
-            CLIENTELE.clients.remove(registry_server_pb2.Client_information(id=request.id))
+            CLIENTELE.clients.remove(
+                registry_server_pb2.Client_information(id=request.id)
+            )
             return registry_server_pb2.Success(value=True)
         # cannot leave if not joined
         return registry_server_pb2.Success(value=False)
+
 
 def register_server(name, addr):
     with grpc.insecure_channel("[::1]:21337") as channel:
@@ -43,8 +48,9 @@ def register_server(name, addr):
 def serve(name: str, port: int, logger: logging.Logger):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     # TODO: Add servicer for publishing and subscribing
-    community_server_pb2_grpc.add_ClientManagementServicer_to_server(ClientManagement(), server)
-    # registry_server_pb2_grpc.add_MaintainServicer_to_server(Maintain(), server)
+    community_server_pb2_grpc.add_ClientManagementServicer_to_server(
+        ClientManagement(), server
+    )
     server.add_insecure_port("[::]:" + str(port))
     server.start()
     logger.info("Server started, listening on " + str(port))
