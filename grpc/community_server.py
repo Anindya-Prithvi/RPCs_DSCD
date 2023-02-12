@@ -7,7 +7,7 @@ import registry_server_pb2_grpc
 
 
 def register_server(name, addr):
-    with grpc.insecure_channel("localhost:21337") as channel:
+    with grpc.insecure_channel("[::1]:21337") as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.RegisterServer(
             registry_server_pb2.Server_information(name=name, addr=addr)
@@ -22,7 +22,7 @@ def serve(name: str, port: int, logger: logging.Logger):
     server.add_insecure_port("[::]:" + str(port))
     server.start()
     logger.info("Server started, listening on " + str(port))
-    if register_server(name, "[::]:" + str(port)):
+    if register_server(name, "[::1]:" + str(port)):
         logger.info("Server registered")
     else:
         logger.error("Server registration failed. Fatal error.")

@@ -12,7 +12,7 @@ OPTIONS = """Options:
 Enter your choice[1-4]: """
 
 def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
-    with grpc.insecure_channel("localhost:21337") as channel:
+    with grpc.insecure_channel("[::1]:21337") as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.GetServerList(
             registry_server_pb2.Client_information(id=str(client_id))
@@ -31,12 +31,12 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
                 getServersfromRegistry(logger, client_id)
             else:
                 print("Invalid choice")
-        except EOFError or KeyboardInterrupt:
-            print("EOF/Keyboard Interrupt. Exiting")
+        except EOFError:
+            print("EOF. Exiting")
             break
-
-    
-
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt. Exiting")
+            break
 
 if __name__ == "__main__":
     logging.basicConfig()
