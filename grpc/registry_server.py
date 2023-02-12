@@ -9,14 +9,13 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 registered = registry_server_pb2.Server_book()
-server_lim = 5
 
 class Maintain(registry_server_pb2_grpc.MaintainServicer):
 
     def RegisterServer(self, request, context):
         # TODO: name and addr should be unique
         new_server = registered.servers.add()
-        new_server.name = "lol"
+        new_server.name = request.name
         new_server.addr = request.addr
         return registry_server_pb2.Success(value=True)
 
