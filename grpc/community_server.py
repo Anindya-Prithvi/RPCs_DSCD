@@ -7,10 +7,13 @@ import registry_server_pb2_grpc
 import community_server_pb2
 import community_server_pb2_grpc
 
+CLIENTELE = community_server_pb2.Clientele()
+
 class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
     def JoinServer(self, request, context):
         # TODO: add limits on joining
         logger.info(f"Join request from {request.id}")
+        CLIENTELE.clients.append(registry_server_pb2.Client_information(id=request.id))
         return registry_server_pb2.Success(value=True)
 
     def LeaveServer(self, request, context):
@@ -23,7 +26,7 @@ def register_server(name, addr):
         response = stub.RegisterServer(
             registry_server_pb2.Server_information(name=name, addr=addr)
         )
-        logger.info(f"Received status: {response.value}")
+        logger.info(f'Received status: {"SUCCESS" if response.value else "FAILURE"}')
         return response.value
 
 

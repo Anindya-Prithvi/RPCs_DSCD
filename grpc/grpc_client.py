@@ -1,34 +1,67 @@
-import logging
+import logging, grpc
+import uuid
 
-import grpc
 import registry_server_pb2
 import registry_server_pb2_grpc
+import community_server_pb2
+import community_server_pb2_grpc
+
+OPTIONS = """Options:
+    1. Get server list
+    2. Subscribe to server
+    3. Leave a server
+    4. Get article
+Enter your choice[1-4]: """
+
+def join_or_leave_Server(logger: logging.Logger, client_id: uuid.UUID, join:bool=True):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = community_server_pb2_grpc.ClientManagementStub(channel)
+        if join:
+            response = stub.JoinServer(registry_server_pb2.Client_information(id=str(client_id)))
+        else:
+            response = stub.LeaveServer(registry_server_pb2.Client_information(id=str(client_id)))
+        logger.info(f'Received status: {"SUCCESS" if response.value else "FAILURE"}')
 
 
-def run():
-    # NOTE(gRPC Python Team): .close() is possible on a channel and should be
-    # used in circumstances in which the with statement does not fit the needs
-    # of the code.
-    print("Will try to greet world ...")
-    with grpc.insecure_channel("localhost:21337") as channel:
-        stub = registry_server_pb2_grpc.MaintainStub(channel)
-        response = stub.RegisterServer(
-            registry_server_pb2.Server_information(
-                name="Bankai", addr=str(__import__("time").time())
-            )
-        )
-        print("Grpc client [as a server] received: 1 " + str(response))
-    with grpc.insecure_channel("localhost:21337") as channel:
+def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
+    with grpc.insecure_channel("[::1]:21337") as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.GetServerList(
-            registry_server_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+            registry_server_pb2.Client_information(id=str(client_id))
         )
-        print("Grpc client [as a server] received: 2 " + str(response.servers))
+        logger.info(
+            "Received server list:\n"
+            + "\n".join([f"{i.name}-{i.addr}" for i in response.servers])
+        )
 
+def run(client_id: uuid.UUID, logger: logging.Logger):
+    print("Starting client, EOF is EOP")
+    while True:
+        try:
+            val = input(OPTIONS)
+            if val == "1":
+                getServersfromRegistry(logger, client_id)
+            elif val == "2":
+                join_or_leave_Server(logger, client_id, True)
+            elif val == "3":
+                join_or_leave_Server(logger, client_id, False)
+            else:
+                print("Invalid choice")
+        except EOFError:
+            print("EOF. Exiting")
+            break
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt. Exiting")
+            break
+        # generic exception
+        except Exception as e:
+            print("Error: ", e)
 
 if __name__ == "__main__":
     logging.basicConfig()
-    my_logger = logging.getLogger(__name__)
-    my_logger.setLevel(logging.INFO)
-    my_logger.info(run)
-    run()
+    client_id = uuid.uuid1()
+    logger = logging.getLogger(f"client-{client_id}")
+    logger.setLevel(logging.INFO)
+    logger.info("Client ID: %s", client_id)
+    run(client_id, logger)
