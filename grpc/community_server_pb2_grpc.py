@@ -6,7 +6,8 @@ import registry_server_pb2 as registry__server__pb2
 
 
 class ClientManagementStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Join and leaving server
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -27,16 +28,19 @@ class ClientManagementStub(object):
 
 
 class ClientManagementServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Join and leaving server
+    """
 
     def JoinServer(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """/ Join server based on uuid
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def LeaveServer(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """/ Leave server based on uuid
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -62,7 +66,8 @@ def add_ClientManagementServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ClientManagement(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Join and leaving server
+    """
 
     @staticmethod
     def JoinServer(request,

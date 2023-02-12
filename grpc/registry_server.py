@@ -13,7 +13,8 @@ registered = registry_server_pb2.Server_book()
 
 class Maintain(registry_server_pb2_grpc.MaintainServicer):
     def RegisterServer(self, request, context):
-        # TODO: name and addr should be unique
+        if any(i.name == request.name or i.addr == request.addr for i in registered.servers):
+            return registry_server_pb2.Success(value=False)
         new_server = registered.servers.add()
         new_server.name = request.name
         new_server.addr = request.addr

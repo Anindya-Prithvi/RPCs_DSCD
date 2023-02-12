@@ -6,7 +6,8 @@ import registry_server_pb2 as registry__server__pb2
 
 
 class MaintainStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Maintains the Server_book and fetches servers for incoming clients
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -27,16 +28,19 @@ class MaintainStub(object):
 
 
 class MaintainServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Maintains the Server_book and fetches servers for incoming clients
+    """
 
     def RegisterServer(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """/ register a server with it's name and address, return a success value
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetServerList(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """/ get the server list for a client who may want to know about existing servers
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -62,7 +66,8 @@ def add_MaintainServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Maintain(object):
-    """Missing associated documentation comment in .proto file."""
+    """/ Maintains the Server_book and fetches servers for incoming clients
+    """
 
     @staticmethod
     def RegisterServer(request,

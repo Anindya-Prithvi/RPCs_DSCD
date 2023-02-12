@@ -1,16 +1,16 @@
 syntax = "proto3";
 import "registry_server.proto";
 
-// Join and leaving server
+/// Join and leaving server
 service ClientManagement {
-    // Join server based on uuid
+    /// Join server based on uuid
     rpc JoinServer (Client_information) returns (Success);
-    // Leave server based on uuid
+    /// Leave server based on uuid
     rpc LeaveServer (Client_information) returns (Success);
 }
 
-// List of currently connected clients
+/// List of currently connected clients
 message Clientele {
-    // List of currently connected clients
+    /// List of currently connected clients
     repeated Client_information clients = 1;
 }
