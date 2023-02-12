@@ -1,22 +1,11 @@
-// syntax = "proto3";
-// import "google/protobuf/empty.proto";
-// // NOT READY
-// message Server_information {
-//     optional string name = 1;
-//     optional string addr = 2;
-//     // better to send a.b.c.d:e than 
-//     // yet another struct and write a parser
-// }
+syntax = "proto3";
+import "registry_server.proto";
 
-// message Success {
-//     optional bool value = 1;
-// }
+service ClientManagement {
+    rpc JoinServer (Client_information) returns (Success);
+    rpc LeaveServer (Client_information) returns (Success);
+}
 
-// message Server_book {
-//     repeated Server_information servers = 1;
-// }
-
-// service Maintain {
-//     rpc RegisterServer (Server_information) returns (Success);
-//     rpc GetServerList (google.protobuf.Empty) returns (Server_book);
-// }
+message Clientele {
+    repeated Client_information clients = 1;
+}

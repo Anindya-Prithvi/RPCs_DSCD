@@ -3,6 +3,8 @@ import uuid
 
 import registry_server_pb2
 import registry_server_pb2_grpc
+import community_server_pb2
+import community_server_pb2_grpc
 
 OPTIONS = """Options:
     1. Get server list
@@ -10,6 +12,14 @@ OPTIONS = """Options:
     3. Publish an article
     4. Get article
 Enter your choice[1-4]: """
+
+def joinServer(logger: logging.Logger, client_id: uuid.UUID):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = community_server_pb2_grpc.ClientManagementStub(channel)
+        response = stub.JoinServer(registry_server_pb2.Client_information(id=str(client_id)))
+        logger.info(f"Received status: {response.value}")
+
 
 def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
     with grpc.insecure_channel("[::1]:21337") as channel:
@@ -29,6 +39,8 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
             val = input(OPTIONS)
             if val == "1":
                 getServersfromRegistry(logger, client_id)
+            elif val == "2":
+                joinServer(logger, client_id)
             else:
                 print("Invalid choice")
         except EOFError:

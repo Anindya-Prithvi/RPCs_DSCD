@@ -5,7 +5,7 @@ import grpc
 import registry_server_pb2 as registry__server__pb2
 
 
-class MaintainStub(object):
+class ClientManagementStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,58 +14,58 @@ class MaintainStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.RegisterServer = channel.unary_unary(
-                '/Maintain/RegisterServer',
-                request_serializer=registry__server__pb2.Server_information.SerializeToString,
+        self.JoinServer = channel.unary_unary(
+                '/ClientManagement/JoinServer',
+                request_serializer=registry__server__pb2.Client_information.SerializeToString,
                 response_deserializer=registry__server__pb2.Success.FromString,
                 )
-        self.GetServerList = channel.unary_unary(
-                '/Maintain/GetServerList',
+        self.LeaveServer = channel.unary_unary(
+                '/ClientManagement/LeaveServer',
                 request_serializer=registry__server__pb2.Client_information.SerializeToString,
-                response_deserializer=registry__server__pb2.Server_book.FromString,
+                response_deserializer=registry__server__pb2.Success.FromString,
                 )
 
 
-class MaintainServicer(object):
+class ClientManagementServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def RegisterServer(self, request, context):
+    def JoinServer(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetServerList(self, request, context):
+    def LeaveServer(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_MaintainServicer_to_server(servicer, server):
+def add_ClientManagementServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'RegisterServer': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterServer,
-                    request_deserializer=registry__server__pb2.Server_information.FromString,
+            'JoinServer': grpc.unary_unary_rpc_method_handler(
+                    servicer.JoinServer,
+                    request_deserializer=registry__server__pb2.Client_information.FromString,
                     response_serializer=registry__server__pb2.Success.SerializeToString,
             ),
-            'GetServerList': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetServerList,
+            'LeaveServer': grpc.unary_unary_rpc_method_handler(
+                    servicer.LeaveServer,
                     request_deserializer=registry__server__pb2.Client_information.FromString,
-                    response_serializer=registry__server__pb2.Server_book.SerializeToString,
+                    response_serializer=registry__server__pb2.Success.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Maintain', rpc_method_handlers)
+            'ClientManagement', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Maintain(object):
+class ClientManagement(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def RegisterServer(request,
+    def JoinServer(request,
             target,
             options=(),
             channel_credentials=None,
@@ -75,14 +75,14 @@ class Maintain(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Maintain/RegisterServer',
-            registry__server__pb2.Server_information.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/ClientManagement/JoinServer',
+            registry__server__pb2.Client_information.SerializeToString,
             registry__server__pb2.Success.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetServerList(request,
+    def LeaveServer(request,
             target,
             options=(),
             channel_credentials=None,
@@ -92,8 +92,8 @@ class Maintain(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Maintain/GetServerList',
+        return grpc.experimental.unary_unary(request, target, '/ClientManagement/LeaveServer',
             registry__server__pb2.Client_information.SerializeToString,
-            registry__server__pb2.Server_book.FromString,
+            registry__server__pb2.Success.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
