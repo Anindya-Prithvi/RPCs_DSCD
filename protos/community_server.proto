@@ -1,22 +1,22 @@
-syntax = "proto3";
-import "google/protobuf/empty.proto";
-// NOT READY
-message Server_information {
-    optional string name = 1;
-    optional string addr = 2;
-    // better to send a.b.c.d:e than 
-    // yet another struct and write a parser
-}
+// syntax = "proto3";
+// import "google/protobuf/empty.proto";
+// // NOT READY
+// message Server_information {
+//     optional string name = 1;
+//     optional string addr = 2;
+//     // better to send a.b.c.d:e than 
+//     // yet another struct and write a parser
+// }
 
-message Success {
-    optional bool value = 1;
-}
+// message Success {
+//     optional bool value = 1;
+// }
 
-message Server_book {
-    repeated Server_information servers = 1;
-}
+// message Server_book {
+//     repeated Server_information servers = 1;
+// }
 
-service Maintain {
-    rpc RegisterServer (Server_information) returns (Success);
-    rpc GetServerList (google.protobuf.Empty) returns (Server_book);
-}
+// service Maintain {
+//     rpc RegisterServer (Server_information) returns (Success);
+//     rpc GetServerList (google.protobuf.Empty) returns (Server_book);
+// }

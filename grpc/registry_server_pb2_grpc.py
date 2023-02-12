@@ -2,7 +2,6 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 import registry_server_pb2 as registry__server__pb2
 
 
@@ -22,7 +21,7 @@ class MaintainStub(object):
                 )
         self.GetServerList = channel.unary_unary(
                 '/Maintain/GetServerList',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                request_serializer=registry__server__pb2.Client_information.SerializeToString,
                 response_deserializer=registry__server__pb2.Server_book.FromString,
                 )
 
@@ -52,7 +51,7 @@ def add_MaintainServicer_to_server(servicer, server):
             ),
             'GetServerList': grpc.unary_unary_rpc_method_handler(
                     servicer.GetServerList,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    request_deserializer=registry__server__pb2.Client_information.FromString,
                     response_serializer=registry__server__pb2.Server_book.SerializeToString,
             ),
     }
@@ -94,7 +93,7 @@ class Maintain(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Maintain/GetServerList',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            registry__server__pb2.Client_information.SerializeToString,
             registry__server__pb2.Server_book.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

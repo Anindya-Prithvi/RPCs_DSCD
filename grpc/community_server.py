@@ -5,7 +5,7 @@ from concurrent import futures
 import registry_server_pb2
 import registry_server_pb2_grpc
 
-logger = logging.getLogger()
+logger = logging.getLogger("server")
 logger.setLevel(logging.INFO)
 
 def register_server(name, addr):

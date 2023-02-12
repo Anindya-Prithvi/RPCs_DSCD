@@ -1,11 +1,12 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
 
 message Server_information {
     optional string name = 1;
     optional string addr = 2;
-    // better to send a.b.c.d:e than 
-    // yet another struct and write a parser
+}
+
+message Client_information {
+    optional string id = 1;
 }
 
 message Success {
@@ -18,5 +19,5 @@ message Server_book {
 
 service Maintain {
     rpc RegisterServer (Server_information) returns (Success);
-    rpc GetServerList (google.protobuf.Empty) returns (Server_book);
+    rpc GetServerList (Client_information) returns (Server_book);
 }

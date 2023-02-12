@@ -5,7 +5,7 @@ import grpc
 import registry_server_pb2
 import registry_server_pb2_grpc
 
-logger = logging.getLogger()
+logger = logging.getLogger("registrar")
 logger.setLevel(logging.INFO)
 
 registered = registry_server_pb2.Server_book()
@@ -20,10 +20,8 @@ class Maintain(registry_server_pb2_grpc.MaintainServicer):
         return registry_server_pb2.Success(value=True)
 
     def GetServerList(self, request, context):
-        book_of_5 = registry_server_pb2.Server_book()
-        book_of_5.servers.extend(registered.servers[:5])
-        return book_of_5
-
+        logger.info("Received request for server list from %s with id %s", context.peer(), request.id)
+        return registered
 
 def serve():
     port = '21337'
