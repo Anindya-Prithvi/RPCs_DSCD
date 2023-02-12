@@ -4,10 +4,14 @@ import uuid
 import registry_server_pb2
 import registry_server_pb2_grpc
 
+OPTIONS = """Options:
+    1. Get server list
+    2. Subscribe to server
+    3. Publish an article
+    4. Get article
+Enter your choice[1-4]: """
 
-def run(client_id: uuid.UUID, logger: logging.Logger):
-    print("Will try to conquer the world ...")
-
+def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
     with grpc.insecure_channel("localhost:21337") as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.GetServerList(
@@ -17,6 +21,21 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
             "Received server list:\n"
             + "\n".join([f"{i.name}-{i.addr}" for i in response.servers])
         )
+
+def run(client_id: uuid.UUID, logger: logging.Logger):
+    print("Starting client, EOF is EOP")
+    while True:
+        try:
+            val = input(OPTIONS)
+            if val == "1":
+                getServersfromRegistry(logger, client_id)
+            else:
+                print("Invalid choice")
+        except EOFError or KeyboardInterrupt:
+            print("EOF/Keyboard Interrupt. Exiting")
+            break
+
+    
 
 
 if __name__ == "__main__":

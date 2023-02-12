@@ -8,5 +8,5 @@ test:
 	python community_server.py serber1 12000&
 	python community_server.py serber2 12001&
 	python community_server.py serber3 12002&
-	python grpc_client-real.py&
+	python grpc_client-real.py
 
