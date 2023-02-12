@@ -5,16 +5,13 @@ from concurrent import futures
 import registry_server_pb2
 import registry_server_pb2_grpc
 
-logger = logging.getLogger("server")
-logger.setLevel(logging.INFO)
-
 def register_server(name, addr):
     with grpc.insecure_channel('localhost:21337') as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.RegisterServer(registry_server_pb2.Server_information(name=name, addr=addr))
         return response.value
 
-def serve(name: str, port: int):
+def serve(name: str, port: int, logger: logging.Logger):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     # TODO: Add servicer for publishing and subscribing
     # registry_server_pb2_grpc.add_MaintainServicer_to_server(Maintain(), server)
@@ -39,6 +36,9 @@ def serve(name: str, port: int):
         except KeyboardInterrupt:
             logger.info("Keyboard interrupt. Stopping server")
             break
+        except EOFError:
+            logger.warning("Running in non interactive mode")
+            server.wait_for_termination()
     server.stop(0)
 
 if __name__ == '__main__':
@@ -54,8 +54,10 @@ if __name__ == '__main__':
         if port<1024 or port>65535:
             print("Port must be between 1024 and 65535")
             sys.exit(1)
+        logger = logging.getLogger(f"{name}-{port}")
+        logger.setLevel(logging.INFO)
         logger.info("Starting server %s on port %d", name, port)
-        serve(name, port)
+        serve(name, port, logger)
     else:
         print("Usage: python community_server.py <name> <port>")
         sys.exit(1)

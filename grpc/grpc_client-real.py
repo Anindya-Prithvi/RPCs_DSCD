@@ -3,10 +3,8 @@ import uuid
 
 import registry_server_pb2
 import registry_server_pb2_grpc
-logger = logging.getLogger("client")
-logger.setLevel(logging.INFO)
 
-def run(client_id: uuid.UUID):
+def run(client_id: uuid.UUID, logger: logging.Logger):
     print("Will try to conquer the world ...")
 
     with grpc.insecure_channel('localhost:21337') as channel:
@@ -17,7 +15,8 @@ def run(client_id: uuid.UUID):
 
 if __name__ == '__main__':
     logging.basicConfig()
-    logger.info(run)
-    client_id = uuid.uuid4()
+    client_id = uuid.uuid1()
+    logger = logging.getLogger(f"client-{client_id}")
+    logger.setLevel(logging.INFO)
     logger.info("Client ID: %s", client_id)
-    run(client_id)
+    run(client_id, logger)
