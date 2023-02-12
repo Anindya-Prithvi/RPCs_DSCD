@@ -20,6 +20,10 @@ class Maintain(registry_server_pb2_grpc.MaintainServicer):
         new_server = registered.servers.add()
         new_server.name = request.name
         new_server.addr = request.addr
+        logger.info(
+            "JOIN REQUEST FROM %s",
+            context.peer(),
+        )
         return registry_server_pb2.Success(value=True)
 
     def GetServerList(self, request, context):

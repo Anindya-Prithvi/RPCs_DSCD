@@ -1,6 +1,5 @@
 syntax = "proto3";
 import "registry_server.proto";
-import "google/protobuf/Timestamp.proto";
 
 /// Join and leaving server
 service ClientManagement {
@@ -21,7 +20,7 @@ message Article {
     /// Author of the article (name)
     optional string author = 1;
     /// Timestamp of publication
-    optional google.protobuf.Timestamp time = 2;
+    optional int64 time = 2;
     /// 200 char string
     optional string content = 3;
 }
