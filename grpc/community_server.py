@@ -55,6 +55,7 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             )
             responselist = []
             for i in ARTICLESLIST.articles:
+                
                 if (
                     type_article == i.type
                     and author_article == i.author

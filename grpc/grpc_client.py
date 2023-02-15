@@ -1,5 +1,6 @@
 import logging, grpc
 import uuid
+import time
 
 import registry_server_pb2
 import registry_server_pb2_grpc
@@ -22,14 +23,25 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
 
-        req.SPORTS.author = "John Doe"
-        req.SPORTS.time = 143526
+        req.SPORTS.author = input("Enter author name:")
+        # convert time in string to int using time
+        time_lim = time.strptime(input("Enter time [d m Y]:"), "%d %m %Y")
+        req.SPORTS.time = int(time.mktime(time_lim))
 
         response = stub.GetArticles(req)
         logger.info(
             "RECEIVED ARTICLES:\n"
-            + "\n".join(
-                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles]
+            + "SPORTS:\n" +
+             "\n".join(
+                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.SPORTS]
+             )
+            + "FASHION:\n" +
+            "\n".join(
+                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.FASHION]
+            )
+            + "POLITICS:\n" +
+            "\n".join(
+                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.POLITICS]
             )
         )
 
@@ -41,7 +53,7 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
         req.client.id = str(client_id)
 
         req.SPORTS.author = "John Doe"
-        req.SPORTS.time = 143526
+        req.SPORTS.time = 14383294526
         req.SPORTS.content = "This is a test article"
 
         response = stub.PublishArticle(req)
