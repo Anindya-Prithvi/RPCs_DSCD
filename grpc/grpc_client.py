@@ -13,7 +13,7 @@ OPTIONS = """Options:
     3. Leave a server
     4. Get article
     5. Publish article
-Enter your choice[1-4]: """
+Enter your choice[1-5]: """
 
 
 def get_articles(logger: logging.Logger, client_id: uuid.UUID):
@@ -22,26 +22,18 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
-
-        req.SPORTS.author = input("Enter author name:")
+        req.article.article_type = community_server_pb2.Article.type.SPORTS
+        req.article.author = input("Enter author name:")
         # convert time in string to int using time
         time_lim = time.strptime(input("Enter time [d m Y]:"), "%d %m %Y")
-        req.SPORTS.time = int(time.mktime(time_lim))
+        req.article.time = int(time.mktime(time_lim))
 
         response = stub.GetArticles(req)
         logger.info(
             "RECEIVED ARTICLES:\n"
-            + "SPORTS:\n" +
+            +
              "\n".join(
-                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.SPORTS]
-             )
-            + "FASHION:\n" +
-            "\n".join(
-                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.FASHION]
-            )
-            + "POLITICS:\n" +
-            "\n".join(
-                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles.POLITICS]
+                [f"[{community_server_pb2.Article.type.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n\n" for i in response.articles]
             )
         )
 
@@ -51,11 +43,10 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
-
-        req.SPORTS.author = "John Doe"
-        req.SPORTS.time = 14383294526
-        req.SPORTS.content = "This is a test article"
-
+        req.article.article_type = community_server_pb2.Article.type.SPORTS
+        req.article.author = "John Doe"
+        req.article.time = 14383294526
+        req.article.content = "This is a test article"
         response = stub.PublishArticle(req)
         logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
 

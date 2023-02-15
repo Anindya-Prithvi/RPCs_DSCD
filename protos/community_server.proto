@@ -53,9 +53,7 @@ message ArticleRequestFormat {
 
     /// Unnecessary usage of oneof, imo enum should suffice
     /// Contains the types of articles
-    optional Article.type article_type = 2;
-    /// Author of the article (name)
-    optional string author = 3;
-    /// Min Timestamp of publication
-    optional int64 time = 4;
+    optional Article article = 2;
 }
+
+/// As long as optional and 1 byte is enough, this is fine

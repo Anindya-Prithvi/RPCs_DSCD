@@ -42,11 +42,9 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             registry_server_pb2.Client_information(id=request.client.id)
             in CLIENTELE.clients
         ):
-            type_article = request.WhichOneof("type")
-            article_recv = getattr(request, type_article)
-
-            author_article = article_recv.author
-            time_article = article_recv.time
+            type_article = request.article.article_type
+            author_article = request.article.author
+            time_article = request.article.time
             print(
                 "The three fields i got are ",
                 type_article,
@@ -57,7 +55,7 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             for i in ARTICLESLIST.articles:
                 
                 if (
-                    type_article == i.type
+                    type_article == i.article_type
                     and author_article == i.author
                     and time_article < i.time
                 ):
@@ -74,12 +72,10 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             registry_server_pb2.Client_information(id=request.client.id)
             in CLIENTELE.clients
         ):
-            type_article = request.WhichOneof("type")
-            article_recv = getattr(request, type_article)
-
-            author_article = article_recv.author
-            time_article = article_recv.time
-            content_article = article_recv.content
+            type_article = request.article.article_type
+            author_article = request.article.author
+            time_article = request.article.time
+            content_article = request.article.content
             print(
                 "The fields i got are ",
                 type_article,
@@ -87,12 +83,12 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
                 time_article,
                 content_article
             )
-            article_new = community_server_pb2.ArticleRequestFormat()
-            article_new.client.id = request.client.id
-            article_of_type = getattr(article_new, type_article)
-            article_of_type.author = author_article
-            article_of_type.time = time_article
-            article_of_type.content = content_article
+            article_new = community_server_pb2.Article()
+            
+            article_new.article_type = type_article
+            article_new.author = author_article
+            article_new.time = time_article
+            article_new.content = content_article
             ARTICLESLIST.articles.append(article_new)
             return registry_server_pb2.Success(value=True)
         else:
