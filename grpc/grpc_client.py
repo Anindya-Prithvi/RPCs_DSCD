@@ -13,6 +13,20 @@ OPTIONS = """Options:
     4. Get article
 Enter your choice[1-4]: """
 
+def get_articles(logger:logging.Logger, client_id: uuid.UUID):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = community_server_pb2_grpc.ClientManagementStub(channel)
+        req = community_server_pb2.ArticleRequestFormat()
+        req.client.id=str(client_id)
+        req.type = community_server_pb2.ArticleRequestFormat.SPORTS
+        req.author = "John Doe"
+        req.time = 143526
+        response = stub.GetArticles(req)
+        logger.info(
+            "RECEIVED ARTICLES:\n"
+            + "\n".join([f"{i.author} - {i.time}\n{i.content}\n" for i in response.article])
+        )
 
 def join_or_leave_Server(
     logger: logging.Logger, client_id: uuid.UUID, join: bool = True
@@ -28,7 +42,7 @@ def join_or_leave_Server(
             response = stub.LeaveServer(
                 registry_server_pb2.Client_information(id=str(client_id))
             )
-        logger.info(f'Received status: {"SUCCESS" if response.value else "FAILURE"}')
+        logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
 
 
 def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
@@ -38,8 +52,8 @@ def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
             registry_server_pb2.Client_information(id=str(client_id))
         )
         logger.info(
-            "Received server list:\n"
-            + "\n".join([f"{i.name}-{i.addr}" for i in response.servers])
+            "RECEIVED SERVER LIST:\n"
+            + "\n".join([f"{i.name} - {i.addr}" for i in response.servers])
         )
 
 
@@ -54,6 +68,8 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
                 join_or_leave_Server(logger, client_id, True)
             elif val == "3":
                 join_or_leave_Server(logger, client_id, False)
+            elif val == "4":
+                get_articles(logger, client_id)
             else:
                 print("Invalid choice")
         except EOFError:

@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+import community_server_pb2 as community__server__pb2
 import registry_server_pb2 as registry__server__pb2
 
 
@@ -25,6 +26,11 @@ class ClientManagementStub(object):
                 request_serializer=registry__server__pb2.Client_information.SerializeToString,
                 response_deserializer=registry__server__pb2.Success.FromString,
                 )
+        self.GetArticles = channel.unary_unary(
+                '/ClientManagement/GetArticles',
+                request_serializer=community__server__pb2.ArticleRequestFormat.SerializeToString,
+                response_deserializer=community__server__pb2.ArticleList.FromString,
+                )
 
 
 class ClientManagementServicer(object):
@@ -45,6 +51,13 @@ class ClientManagementServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetArticles(self, request, context):
+        """/ Get articles for uuid
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientManagementServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -57,6 +70,11 @@ def add_ClientManagementServicer_to_server(servicer, server):
                     servicer.LeaveServer,
                     request_deserializer=registry__server__pb2.Client_information.FromString,
                     response_serializer=registry__server__pb2.Success.SerializeToString,
+            ),
+            'GetArticles': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetArticles,
+                    request_deserializer=community__server__pb2.ArticleRequestFormat.FromString,
+                    response_serializer=community__server__pb2.ArticleList.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -100,5 +118,22 @@ class ClientManagement(object):
         return grpc.experimental.unary_unary(request, target, '/ClientManagement/LeaveServer',
             registry__server__pb2.Client_information.SerializeToString,
             registry__server__pb2.Success.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetArticles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ClientManagement/GetArticles',
+            community__server__pb2.ArticleRequestFormat.SerializeToString,
+            community__server__pb2.ArticleList.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

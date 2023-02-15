@@ -13,7 +13,7 @@ MAXCLIENTS = 5
 
 class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
     def JoinServer(self, request, context):
-        logger.info(f"Join request from {request.id}")
+        logger.info(f"JOIN REQUEST FROM {request.id}")
         # Check if server is full
         if len(CLIENTELE.clients) >= MAXCLIENTS:
             return registry_server_pb2.Success(value=False)
@@ -25,7 +25,7 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
         return registry_server_pb2.Success(value=True)
 
     def LeaveServer(self, request, context):
-        logger.info(f"Leave request from {request.id}")
+        logger.info(f"LEAVE REQUEST FROM {request.id}")
         if registry_server_pb2.Client_information(id=request.id) in CLIENTELE.clients:
             CLIENTELE.clients.remove(
                 registry_server_pb2.Client_information(id=request.id)
@@ -33,6 +33,15 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             return registry_server_pb2.Success(value=True)
         # cannot leave if not joined
         return registry_server_pb2.Success(value=False)
+    
+    def GetArticles(self, request, context):
+        # Remember clients are stateless
+        logger.info(f"ARTICLE REQUEST FROM {request.client.id}")
+        if registry_server_pb2.Client_information(id=request.client.id) in CLIENTELE.clients:
+            return community_server_pb2.ArticleList(article=[])
+        else:
+            # abort request if not joined
+            request.abort()
 
 
 def register_server(name, addr):

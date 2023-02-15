@@ -7,6 +7,8 @@ service ClientManagement {
     rpc JoinServer (Client_information) returns (Success);
     /// Leave server based on uuid
     rpc LeaveServer (Client_information) returns (Success);
+    /// Get articles for uuid
+    rpc GetArticles (ArticleRequestFormat) returns (ArticleList);
 }
 
 /// List of currently connected clients
@@ -25,13 +27,31 @@ message Article {
     optional string content = 3;
 }
 
+/// Like a book of articles
+message ArticleList {
+    /// List of articles
+    repeated Article articles = 1;
+}
+
 /// Request and publish format
-message ArticleFormat {
+message ArticleRequestFormat {
+    /// Client uuid
+    optional Client_information client = 1;
+
     /// Unnecessary usage of oneof, imo enum should suffice
     /// Contains the types of articles
-    oneof Type {
-        Article SPORTS = 1;
-        Article FASHION = 2;
-        Article POLITICS = 3;
+    enum Type {
+        /// Sports article
+        SPORTS = 0;
+        /// Fashion article
+        FASHION = 1;
+        /// Politics article
+        POLITICS = 2;
     }
+    /// Type of article
+    optional Type type = 2;
+    /// author name
+    optional string author = 3;
+    /// Time filter
+    optional int64 time = 4;
 }
