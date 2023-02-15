@@ -13,20 +13,24 @@ OPTIONS = """Options:
     4. Get article
 Enter your choice[1-4]: """
 
-def get_articles(logger:logging.Logger, client_id: uuid.UUID):
+
+def get_articles(logger: logging.Logger, client_id: uuid.UUID):
     addr = input("Enter address of server [dom:port]: ")
     with grpc.insecure_channel(addr) as channel:
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
-        req.client.id=str(client_id)
+        req.client.id = str(client_id)
         req.type = community_server_pb2.ArticleRequestFormat.SPORTS
         req.author = "John Doe"
         req.time = 143526
         response = stub.GetArticles(req)
         logger.info(
             "RECEIVED ARTICLES:\n"
-            + "\n".join([f"{i.author} - {i.time}\n{i.content}\n" for i in response.article])
+            + "\n".join(
+                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.article]
+            )
         )
+
 
 def join_or_leave_Server(
     logger: logging.Logger, client_id: uuid.UUID, join: bool = True

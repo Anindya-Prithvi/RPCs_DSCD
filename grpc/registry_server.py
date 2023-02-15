@@ -8,7 +8,7 @@ import registry_server_pb2_grpc
 
 logger = logging.getLogger("registrar")
 logger.setLevel(logging.INFO)
-MAXSERVERS = 5 #default, changeable by command line arg
+MAXSERVERS = 5  # default, changeable by command line arg
 
 registered = registry_server_pb2.Server_book()
 
@@ -51,7 +51,7 @@ def serve():
 
 if __name__ == "__main__":
     # get sys args
-    
+
     if len(sys.argv) > 1:
         try:
             MAXSERVERS = int(sys.argv[1])

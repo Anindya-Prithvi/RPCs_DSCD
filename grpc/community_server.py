@@ -33,11 +33,14 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             return registry_server_pb2.Success(value=True)
         # cannot leave if not joined
         return registry_server_pb2.Success(value=False)
-    
+
     def GetArticles(self, request, context):
         # Remember clients are stateless
         logger.info(f"ARTICLE REQUEST FROM {request.client.id}")
-        if registry_server_pb2.Client_information(id=request.client.id) in CLIENTELE.clients:
+        if (
+            registry_server_pb2.Client_information(id=request.client.id)
+            in CLIENTELE.clients
+        ):
             return community_server_pb2.ArticleList(article=[])
         else:
             # abort request if not joined
