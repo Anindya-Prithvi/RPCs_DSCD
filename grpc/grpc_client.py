@@ -27,7 +27,7 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         logger.info(
             "RECEIVED ARTICLES:\n"
             + "\n".join(
-                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.article]
+                [f"{i.author} - {i.time}\n{i.content}\n" for i in response.articles]
             )
         )
 

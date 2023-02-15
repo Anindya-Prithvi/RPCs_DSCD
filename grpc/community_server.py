@@ -41,10 +41,10 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             registry_server_pb2.Client_information(id=request.client.id)
             in CLIENTELE.clients
         ):
-            return community_server_pb2.ArticleList(article=[])
+            return community_server_pb2.ArticleList(articles=[])
         else:
             # abort request if not joined
-            request.abort()
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
 
 
 def register_server(name, addr):
