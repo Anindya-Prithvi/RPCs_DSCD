@@ -25,15 +25,19 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         req.article.article_type = community_server_pb2.Article.type.SPORTS
         req.article.author = input("Enter author name:")
         # convert time in string to int using time
-        time_lim = time.strptime(input("Enter time [d m Y]:"), "%d %m %Y")
-        req.article.time = int(time.mktime(time_lim))
+        try:
+            time_lim = time.strptime(input("Enter time [d m Y]:"), "%d %m %Y")
+            req.article.time = int(time.mktime(time_lim))
+        except ValueError:
+            logger.info("Invalid time format, defaulting to UNSPECIFIED")
+            req.article.time = -1
 
         response = stub.GetArticles(req)
         logger.info(
             "RECEIVED ARTICLES:\n"
             +
-             "\n".join(
-                [f"[{community_server_pb2.Article.type.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n\n" for i in response.articles]
+             "-------------------------\n".join(
+                [f"[{community_server_pb2.Article.type.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n" for i in response.articles]
             )
         )
 
