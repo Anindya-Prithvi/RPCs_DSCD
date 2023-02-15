@@ -43,11 +43,16 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             in CLIENTELE.clients
         ):
             type_article = request.WhichOneof("type")
-            article_recv = getattr(request,type_article)
+            article_recv = getattr(request, type_article)
 
             author_article = article_recv.author
             time_article = article_recv.time
-            print("The three fields i got are ", type_article, author_article, time_article)
+            print(
+                "The three fields i got are ",
+                type_article,
+                author_article,
+                time_article,
+            )
             responselist = []
             for i in ARTICLESLIST.articles:
                 if (
