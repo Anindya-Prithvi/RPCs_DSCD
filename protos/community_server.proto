@@ -40,18 +40,9 @@ message ArticleRequestFormat {
 
     /// Unnecessary usage of oneof, imo enum should suffice
     /// Contains the types of articles
-    enum Type {
-        /// Sports article
-        SPORTS = 0;
-        /// Fashion article
-        FASHION = 1;
-        /// Politics article
-        POLITICS = 2;
+    oneof type {
+        Article SPORTS = 2;
+        Article FASHION = 3;
+        Article POLITICS = 4;
     }
-    /// Type of article
-    optional Type type = 2;
-    /// author name
-    optional string author = 3;
-    /// Time filter
-    optional int64 time = 4;
 }

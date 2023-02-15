@@ -20,9 +20,10 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
-        req.type = community_server_pb2.ArticleRequestFormat.SPORTS
-        req.author = "John Doe"
-        req.time = 143526
+
+        req.SPORTS.author = "John Doe"
+        req.SPORTS.time = 143526
+
         response = stub.GetArticles(req)
         logger.info(
             "RECEIVED ARTICLES:\n"
@@ -84,7 +85,8 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
             break
         # generic exception
         except Exception as e:
-            print("Error: ", e)
+            # print error with description and traceback
+            logger.exception(e)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import community_server_pb2
 import community_server_pb2_grpc
 
 CLIENTELE = community_server_pb2.Clientele()
+ARTICLESLIST = community_server_pb2.ArticleList()
 MAXCLIENTS = 5
 
 
@@ -41,7 +42,21 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             registry_server_pb2.Client_information(id=request.client.id)
             in CLIENTELE.clients
         ):
-            return community_server_pb2.ArticleList(articles=[])
+            type_article = request.WhichOneof("type")
+            article_recv = getattr(request,type_article)
+
+            author_article = article_recv.author
+            time_article = article_recv.time
+            print("The three fields i got are ", type_article, author_article, time_article)
+            responselist = []
+            for i in ARTICLESLIST.articles:
+                if (
+                    type_article == i.type
+                    and author_article == i.author
+                    and time_article < i.time
+                ):
+                    responselist.append(i)
+            return community_server_pb2.ArticleList(articles=responselist)
         else:
             # abort request if not joined
             context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
