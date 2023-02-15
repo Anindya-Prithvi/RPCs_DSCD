@@ -1,5 +1,5 @@
 all:
-	python -m grpc_tools.protoc -I ../protos --python_out=. --grpc_python_out=. ../protos/community_server.proto registry_server.proto
+	python -m grpc_tools.protoc -I ../protos --python_out=. --grpc_python_out=. community_server.proto registry_server.proto
 
 test:
 	@echo "Running test on Windows11, Write your own for other inferior platforms"
