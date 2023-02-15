@@ -12,3 +12,6 @@ Stop-Process -Id $s1.Id
 Stop-Process -Id $s2.Id
 Stop-Process -Id $s3.Id
 Stop-Process -Id $client.Id
+
+$null = Read-Host -Prompt "Press Enter to kill all windows terminal instances"
+Stop-process -Name WindowsTerminal

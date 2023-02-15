@@ -65,6 +65,38 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
         else:
             # abort request if not joined
             context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
+    
+    def PublishArticle(self, request, context):
+        # Remember clients are stateless
+        logger.info(f"ARTICLE PUBLISH REQUEST FROM {request.client.id}")
+        if (
+            registry_server_pb2.Client_information(id=request.client.id)
+            in CLIENTELE.clients
+        ):
+            type_article = request.WhichOneof("type")
+            article_recv = getattr(request, type_article)
+
+            author_article = article_recv.author
+            time_article = article_recv.time
+            content_article = article_recv.content
+            print(
+                "The fields i got are ",
+                type_article,
+                author_article,
+                time_article,
+                content_article
+            )
+            article_new = community_server_pb2.ArticleRequestFormat()
+            article_new.client.id = request.client.id
+            article_of_type = getattr(article_new, type_article)
+            article_of_type.author = author_article
+            article_of_type.time = time_article
+            article_of_type.content = content_article
+            ARTICLESLIST.articles.append(article_new)
+            return registry_server_pb2.Success(value=True)
+        else:
+            # abort request if not joined
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
 
 
 def register_server(name, addr):

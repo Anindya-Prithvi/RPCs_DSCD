@@ -11,6 +11,7 @@ OPTIONS = """Options:
     2. Subscribe to server
     3. Leave a server
     4. Get article
+    5. Publish article
 Enter your choice[1-4]: """
 
 
@@ -32,6 +33,19 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
             )
         )
 
+def publish_article(logger: logging.Logger, client_id: uuid.UUID):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = community_server_pb2_grpc.ClientManagementStub(channel)
+        req = community_server_pb2.ArticleRequestFormat()
+        req.client.id = str(client_id)
+
+        req.SPORTS.author = "John Doe"
+        req.SPORTS.time = 143526
+        req.SPORTS.content = "This is a test article"
+
+        response = stub.PublishArticle(req)
+        logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
 
 def join_or_leave_Server(
     logger: logging.Logger, client_id: uuid.UUID, join: bool = True
@@ -75,6 +89,8 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
                 join_or_leave_Server(logger, client_id, False)
             elif val == "4":
                 get_articles(logger, client_id)
+            elif val == "5":
+                publish_article(logger, client_id)
             else:
                 print("Invalid choice")
         except EOFError:

@@ -45,7 +45,7 @@ def serve():
     registry_server_pb2_grpc.add_MaintainServicer_to_server(Maintain(), server)
     server.add_insecure_port("[::]:" + port)
     server.start()
-    print("Server started, listening on " + port)
+    print("Registry started, listening on " + port)
     server.wait_for_termination()
 
 
