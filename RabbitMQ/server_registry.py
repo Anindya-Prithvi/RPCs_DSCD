@@ -4,6 +4,8 @@ import registry_server_pb2
 import community_server_pb2
 
 registered = registry_server_pb2.Server_book()
+connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
+channel = connection.channel()
 
 def registerserver(name, port):
     if name in [i.name for i in registered.servers]:
@@ -20,10 +22,15 @@ def on_request(ch, method, props, body):
     print("Received request from client {}".format(request.name))
     if (request.type == "register"):
         response = registerserver(request.name, request.addr)
+    request2 = registry_server_pb2.Client_information()
+    request2.ParseFromString(body)
+    if (request2.type == "get"):
+        client_info = registered
+        client_info_bytes = client_info.SerializeToString()
+        channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+        print("Sent server list to client {}".format(request.name))
 
 def serve():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
-    channel = connection.channel()
     channel.queue_delete(queue='registry_server')
     channel.queue_declare(queue="registry_server")
     channel.basic_consume(queue="registry_server", on_message_callback=on_request)

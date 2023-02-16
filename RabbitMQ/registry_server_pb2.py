@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15registry_server.proto\"h\n\x12Server_information\x12\x11\n\x04name\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x11\n\x04\x61\x64\x64r\x18\x02 \x01(\tH\x01\x88\x01\x01\x12\x11\n\x04type\x18\x03 \x01(\tH\x02\x88\x01\x01\x42\x07\n\x05_nameB\x07\n\x05_addrB\x07\n\x05_type\",\n\x12\x43lient_information\x12\x0f\n\x02id\x18\x01 \x01(\tH\x00\x88\x01\x01\x42\x05\n\x03_id\"\'\n\x07Success\x12\x12\n\x05value\x18\x01 \x01(\x08H\x00\x88\x01\x01\x42\x08\n\x06_value\"3\n\x0bServer_book\x12$\n\x07servers\x18\x01 \x03(\x0b\x32\x13.Server_information2o\n\x08Maintain\x12/\n\x0eRegisterServer\x12\x13.Server_information\x1a\x08.Success\x12\x32\n\rGetServerList\x12\x13.Client_information\x1a\x0c.Server_bookb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15registry_server.proto\"h\n\x12Server_information\x12\x11\n\x04name\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x11\n\x04\x61\x64\x64r\x18\x02 \x01(\tH\x01\x88\x01\x01\x12\x11\n\x04type\x18\x03 \x01(\tH\x02\x88\x01\x01\x42\x07\n\x05_nameB\x07\n\x05_addrB\x07\n\x05_type\"H\n\x12\x43lient_information\x12\x0f\n\x02id\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x11\n\x04type\x18\x02 \x01(\tH\x01\x88\x01\x01\x42\x05\n\x03_idB\x07\n\x05_type\"\'\n\x07Success\x12\x12\n\x05value\x18\x01 \x01(\x08H\x00\x88\x01\x01\x42\x08\n\x06_value\"3\n\x0bServer_book\x12$\n\x07servers\x18\x01 \x03(\x0b\x32\x13.Server_information2o\n\x08Maintain\x12/\n\x0eRegisterServer\x12\x13.Server_information\x1a\x08.Success\x12\x32\n\rGetServerList\x12\x13.Client_information\x1a\x0c.Server_bookb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'registry_server_pb2', globals())
@@ -23,11 +23,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _SERVER_INFORMATION._serialized_start=25
   _SERVER_INFORMATION._serialized_end=129
   _CLIENT_INFORMATION._serialized_start=131
-  _CLIENT_INFORMATION._serialized_end=175
-  _SUCCESS._serialized_start=177
-  _SUCCESS._serialized_end=216
-  _SERVER_BOOK._serialized_start=218
-  _SERVER_BOOK._serialized_end=269
-  _MAINTAIN._serialized_start=271
-  _MAINTAIN._serialized_end=382
+  _CLIENT_INFORMATION._serialized_end=203
+  _SUCCESS._serialized_start=205
+  _SUCCESS._serialized_end=244
+  _SERVER_BOOK._serialized_start=246
+  _SERVER_BOOK._serialized_end=297
+  _MAINTAIN._serialized_start=299
+  _MAINTAIN._serialized_end=410
 # @@protoc_insertion_point(module_scope)

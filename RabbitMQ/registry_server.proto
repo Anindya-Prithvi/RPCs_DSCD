@@ -14,6 +14,8 @@ message Server_information {
 message Client_information {
     /// contains the UUID
     optional string id = 1;
+
+    optional string type = 2;
 }
 
 /// Success values of RPC (maybe moved to a more generic proto)
