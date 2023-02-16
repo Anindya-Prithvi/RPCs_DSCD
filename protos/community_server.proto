@@ -21,18 +21,29 @@ message Clientele {
 
 /// Full article message
 message Article {
+    /// Type of article
+    enum type {
+        /// Article is SPORTS
+        SPORTS = 0;
+        /// Article is FASHION
+        FASHION = 1;
+        /// Article is POLITICS
+        POLITICS = 2;        
+    }
+    /// type of article
+    optional type article_type = 1;
     /// Author of the article (name)
-    optional string author = 1;
+    optional string author = 2;
     /// Timestamp of publication
-    optional int64 time = 2;
+    optional int64 time = 3;
     /// 200 char string
-    optional string content = 3;
+    optional string content = 4;
 }
 
 /// Like a book of articles
 message ArticleList {
     /// List of all articles
-    repeated ArticleRequestFormat articles = 1;
+    repeated Article articles = 1;
 }
 
 /// Request and publish format
@@ -42,9 +53,7 @@ message ArticleRequestFormat {
 
     /// Unnecessary usage of oneof, imo enum should suffice
     /// Contains the types of articles
-    oneof type {
-        Article SPORTS = 2;
-        Article FASHION = 3;
-        Article POLITICS = 4;
-    }
+    optional Article article = 2;
 }
+
+/// As long as optional and 1 byte is enough, this is fine
