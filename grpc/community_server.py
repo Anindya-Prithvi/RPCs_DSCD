@@ -1,5 +1,6 @@
 import sys, logging
 import grpc
+import time
 from concurrent import futures
 
 import registry_server_pb2
@@ -83,11 +84,20 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
                 time_article,
                 content_article
             )
+            if request.article.time!=0:
+                logger.error("Time is present")
+                context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Time is present")
+
             article_new = community_server_pb2.Article()
-            
+            # check if article_type is present in oneof
+            if not article_new.HasField("article_type"):
+                logger.error("Article type not present")
+                context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Article type not present")
+                return
             article_new.article_type = type_article
             article_new.author = author_article
-            article_new.time = time_article
+            # get current time in seconds since epoch
+            article_new.time = int(time.time())
             article_new.content = content_article
             ARTICLESLIST.articles.append(article_new)
             return registry_server_pb2.Success(value=True)

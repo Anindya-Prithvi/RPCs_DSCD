@@ -30,8 +30,10 @@ message Article {
         /// Article is POLITICS
         POLITICS = 2;        
     }
-    /// type of article
-    optional type article_type = 1;
+    
+    oneof _type {
+        type article_type = 1;
+    }
     /// Author of the article (name)
     optional string author = 2;
     /// Timestamp of publication

@@ -22,15 +22,22 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
-        req.article.article_type = community_server_pb2.Article.type.SPORTS
-        req.article.author = input("Enter author name:")
+        try:
+            req.article.article_type = getattr(community_server_pb2.Article.type,input("Type of article [SPORTS, FASHION, POLITICS]: "))
+        except ValueError:
+            logger.warning("Invalid article type, defaulting to UNSPECIFIED")
+        author_name = input("Enter author name:")
+        if len(author_name) == 0:
+            logger.warning("Author name is empty, defaulting to UNSPECIFIED")
+        else:
+            req.article.author = author_name        
         # convert time in string to int using time
         try:
-            time_lim = time.strptime(input("Enter time [d m Y]:"), "%d %m %Y")
+            time_lim = time.strptime(input("Enter time [d m Y h:m]: "), "%d %m %Y %H:%M")
             req.article.time = int(time.mktime(time_lim))
         except ValueError:
-            logger.info("Invalid time format, defaulting to UNSPECIFIED")
-            req.article.time = -1
+            logger.error("Invalid time format")
+            return
 
         response = stub.GetArticles(req)
         logger.info(
@@ -42,15 +49,30 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
         )
 
 def publish_article(logger: logging.Logger, client_id: uuid.UUID):
-    addr = input("Enter address of server [dom:port]: ")
+    addr = input("Enter address of server [ip:port]: ")
     with grpc.insecure_channel(addr) as channel:
         stub = community_server_pb2_grpc.ClientManagementStub(channel)
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
-        req.article.article_type = community_server_pb2.Article.type.SPORTS
-        req.article.author = "John Doe"
-        req.article.time = 14383294526
-        req.article.content = "This is a test article"
+        try:
+            req.article.article_type = getattr(community_server_pb2.Article.type,input("Type of article [SPORTS, FASHION, POLITICS]: "))
+        except:
+            logger.error("Invalid article type, still sending")
+            # return
+        req.article.author = input("Author of article: ")
+        # throw error if author length is 0
+        if len(req.article.author) == 0:
+            logger.error("Author name cannot be empty")
+            return
+        
+        #time to be filled by server
+        try:
+            time_lim = time.strptime(input("Enter time [d m Y h:m]: "), "%d %m %Y %H:%M")
+            req.article.time = int(time.mktime(time_lim))
+        except ValueError:
+            logger.error("Invalid time format")
+            return
+        req.article.content = input("Content of the article[<=200 char]: ")
         response = stub.PublishArticle(req)
         logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
 
@@ -72,7 +94,9 @@ def join_or_leave_Server(
 
 
 def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
-    with grpc.insecure_channel("[::1]:21337") as channel:
+    soc = input("Enter IP:port of registry server (leave enter to default on loopback): ")
+    if soc=="": soc = "[::1]:21337"
+    with grpc.insecure_channel(soc) as channel:
         stub = registry_server_pb2_grpc.MaintainStub(channel)
         response = stub.GetServerList(
             registry_server_pb2.Client_information(id=str(client_id))
@@ -83,8 +107,9 @@ def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
         )
 
 
+
 def run(client_id: uuid.UUID, logger: logging.Logger):
-    print("Starting client, EOF is EOP")
+    print("Starting client, EOF is EOP; Servers listen on *all* ip")
     while True:
         try:
             val = input(OPTIONS)
