@@ -13,24 +13,34 @@ OPTIONS = """Options:
     4. Get article
 Enter your choice[1-4]: """
 
-def join_or_leave_server(client_id, port, join=True):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host = 'localhost'))
-    channel = connection.channel()
-
-    if join:
-        channel.queue_declare(queue='join_queue', exclusive=True)
-        client_info = registry_server_pb2.Client_information(id=str(client_id))
-        client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='join_queue', body=client_info_bytes)
-        print('Sent join request for client {}'.format(client_id))
+def just_print_it(ch, method, properties, body):
+    request = registry_server_pb2.Success()
+    request.ParseFromString(body)
+    if (request.value == True):
+        print("SUCCESS\n")
     else:
-        channel.queue_declare(queue='leave_queue', exclusive=True)
-        client_info = registry_server_pb2.Client_information(id=str(client_id))
-        client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='leave_queue', body=client_info_bytes)
-        print('Sent leave request for client {}'.format(client_id))
+        print("FAILURE\n")
+    channel.stop_consuming()
 
-    connection.close()
+def join_or_leave_server(client_id, port, join=True):
+    addr = input("Enter address of server [dom:port]: ")
+    if join:
+        # channel.queue_declare(queue='join_queue', exclusive=True)
+        client_info = registry_server_pb2.Client_information(id=str(client_id), type="join")
+        client_info_bytes = client_info.SerializeToString()
+        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        print('Sent join request for client {}'.format(client_id))
+        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.start_consuming()
+    else:
+        # channel.queue_declare(queue='leave_queue', exclusive=True)
+        client_info = registry_server_pb2.Client_information(id=str(client_id), type="leave")
+        client_info_bytes = client_info.SerializeToString()
+        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        print('Sent leave request for client {}'.format(client_id))
+        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.start_consuming()
+
 
 def handle_server_list_response(ch, method, properties, body):
     server_list = registry_server_pb2.Server_book()
@@ -60,7 +70,7 @@ def begin_operation(client_id, port):
             elif val == "2":
                 join_or_leave_server(client_id, port)
             elif val == "3":
-                join_or_leave_server(client_id, port)
+                join_or_leave_server(client_id, port, False)
             else:
                 print("Invalid choice")
         except EOFError:

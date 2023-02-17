@@ -11,6 +11,7 @@ def registerserver(name, port):
     if name in [i.name for i in registered.servers]:
         print("Server name already registered")
         return registry_server_pb2.Success(value=False)
+    print("Join request from {} at port {}".format(name, port))
     new_server = registered.servers.add()
     new_server.name = name
     new_server.addr = f"localhost:{port}"
@@ -19,9 +20,12 @@ def registerserver(name, port):
 def on_request(ch, method, props, body):
     request = registry_server_pb2.Server_information()
     request.ParseFromString(body)
-    print("Received request from client {}".format(request.name))
     if (request.type == "register"):
         response = registerserver(request.name, request.addr)
+        if (response.value == True):
+            client_info = registry_server_pb2.Success(value=True)
+            client_info_bytes = client_info.SerializeToString()
+            channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
     request2 = registry_server_pb2.Client_information()
     request2.ParseFromString(body)
     if (request2.type == "get"):
