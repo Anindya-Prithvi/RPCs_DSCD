@@ -1,0 +1,20 @@
+syntax = "proto3";
+import "registry_server.proto";
+import "community_server.proto";
+
+/// Join and leaving server
+service ServerServerManagement {
+    /// Join server based on ip:port (kinda insecure)
+    rpc JoinServer (Server_information) returns (ArticleList);
+    /// Leave server
+    rpc LeaveServer (Server_information) returns (Success);
+    /// Dumps article to client whenever someone publishes (inefficient but idc)
+    rpc DumpArticles (Article) returns (Success);
+    /// lists are threadsafe in py; if Article not in list, dump further
+}
+
+/// List of currently connected servers
+message Serverele {
+    /// List of currently connected servers
+    repeated Server_information server = 1;
+}

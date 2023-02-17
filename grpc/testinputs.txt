@@ -23,3 +23,32 @@ FASHION
 SPORTS
 s1pub
 This is some real sport
+
+
+# Client 2 inputs
+1
+[::1]:21337
+2
+[::1]:12002
+2
+[::1]:12001
+5
+[::1]:12002
+FASHION
+f2pub
+Fashion is just another ion
+4
+[::1]:12002
+FASHION
+
+
+4
+[::1]:12002
+FASHION
+
+12 02 2023 19:56:03
+5
+[::1]:12002
+POLITICS
+p1pub
+Politics shouldnt be discussed with academics
