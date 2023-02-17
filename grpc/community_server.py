@@ -78,7 +78,7 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             time_article = request.article.time
             content_article = request.article.content
 
-            if request.article.time != 0:
+            if time_article != 0:
                 logger.error("Time is present")
                 context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Time is present")
 
@@ -88,6 +88,13 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
                 logger.error("Article type not present")
                 context.abort(
                     grpc.StatusCode.INVALID_ARGUMENT, "Article type not present"
+                )
+                return
+            # if length of content exceeds 200 chars, reject
+            if len(content_article) > 200:
+                logger.error("Content length exceeds 200 chars")
+                context.abort(
+                    grpc.StatusCode.INVALID_ARGUMENT, "Content length exceeds 200 chars"
                 )
                 return
             article_new.article_type = type_article

@@ -1,0 +1,25 @@
+# Client 1 inputs
+1
+[::1]:21337
+2
+[::1]:12002
+5
+[::1]:12002
+FASHION
+f1pub
+This is a work of art
+4
+[::1]:12002
+FASHION
+
+
+4
+[::1]:12002
+FASHION
+
+12 02 2023 19:56:03
+5
+[::1]:12002
+SPORTS
+s1pub
+This is some real sport

@@ -18,70 +18,76 @@ Enter your choice[1-5]: """
 
 def get_articles(logger: logging.Logger, client_id: uuid.UUID):
     addr = input("Enter address of server [dom:port]: ")
-    with grpc.insecure_channel(addr) as channel:
-        stub = community_server_pb2_grpc.ClientManagementStub(channel)
-        req = community_server_pb2.ArticleRequestFormat()
-        req.client.id = str(client_id)
-        try:
-            req.article.article_type = getattr(
-                community_server_pb2.Article.type,
-                input("Type of article [SPORTS, FASHION, POLITICS]: "),
-            )
-        except:
-            logger.warning("Invalid article type, defaulting to UNSPECIFIED")
-        author_name = input("Enter author name:")
-        if len(author_name) == 0:
-            logger.warning("Author name is empty, defaulting to UNSPECIFIED")
-        else:
-            req.article.author = author_name
-        # convert time in string to int using time
-        try:
-            time_lim = time.strptime(
-                input("Enter time [d m Y h:m:s] (Leave blank for current time): "),
-                "%d %m %Y %H:%M:%S",
-            )
-            req.article.time = int(time.mktime(time_lim))
-        except:
-            logger.error("Invalid time format. Time is needed, using current time")
-            req.article.time = int(time.time())
+    try:
+        with grpc.insecure_channel(addr) as channel:
+            stub = community_server_pb2_grpc.ClientManagementStub(channel)
+            req = community_server_pb2.ArticleRequestFormat()
+            req.client.id = str(client_id)
+            try:
+                req.article.article_type = getattr(
+                    community_server_pb2.Article.type,
+                    input("Type of article [SPORTS, FASHION, POLITICS]: "),
+                )
+            except:
+                logger.warning("Invalid article type, defaulting to UNSPECIFIED")
+            author_name = input("Enter author name:")
+            if len(author_name) == 0:
+                logger.warning("Author name is empty, defaulting to UNSPECIFIED")
+            else:
+                req.article.author = author_name
+            # convert time in string to int using time
+            try:
+                time_lim = time.strptime(
+                    input("Enter time [d m Y h:m:s] (Leave blank for current time): "),
+                    "%d %m %Y %H:%M:%S",
+                )
+                req.article.time = int(time.mktime(time_lim))
+            except:
+                logger.error("Invalid time format. Time is needed, using current time")
+                req.article.time = int(time.time())
 
-        response = stub.GetArticles(req)
-        logger.info(
-            "RECEIVED ARTICLES:\n"
-            + "-------------------------\n".join(
-                [
-                    f"[{community_server_pb2.Article.type.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n"
-                    for i in response.articles
-                ]
+            response = stub.GetArticles(req)
+            logger.info(
+                "RECEIVED ARTICLES:\n"
+                + "-------------------------\n".join(
+                    [
+                        f"[{community_server_pb2.Article.type.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n"
+                        for i in response.articles
+                    ]
+                )
             )
-        )
+    except Exception as e:
+        logger.error(f"FAIL: {e}")
 
 
 def publish_article(logger: logging.Logger, client_id: uuid.UUID):
     addr = input("Enter address of server [ip:port]: ")
-    with grpc.insecure_channel(addr) as channel:
-        stub = community_server_pb2_grpc.ClientManagementStub(channel)
-        req = community_server_pb2.ArticleRequestFormat()
-        req.client.id = str(client_id)
-        try:
-            req.article.article_type = getattr(
-                community_server_pb2.Article.type,
-                input("Type of article [SPORTS, FASHION, POLITICS]: "),
-            )
-        except:
-            logger.error("Invalid article type")
-            return
-        req.article.author = input("Author of article: ")
-        # throw error if author length is 0
-        # will also be rejected by CS
-        if len(req.article.author) == 0:
-            logger.error("Author name cannot be empty")
-            return
+    try:
+        with grpc.insecure_channel(addr) as channel:
+            stub = community_server_pb2_grpc.ClientManagementStub(channel)
+            req = community_server_pb2.ArticleRequestFormat()
+            req.client.id = str(client_id)
+            try:
+                req.article.article_type = getattr(
+                    community_server_pb2.Article.type,
+                    input("Type of article [SPORTS, FASHION, POLITICS]: "),
+                )
+            except:
+                logger.error("Invalid article type")
+                return
+            req.article.author = input("Author of article: ")
+            # throw error if author length is 0
+            # will also be rejected by CS
+            if len(req.article.author) == 0:
+                logger.error("Author name cannot be empty")
+                return
 
-        # time to be filled by server
-        req.article.content = input("Content of the article[<=200 char]: ")
-        response = stub.PublishArticle(req)
-        logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
+            # time to be filled by server
+            req.article.content = input("Content of the article[<=200 char]: ")
+            response = stub.PublishArticle(req)
+            logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
+    except Exception as e:
+        logger.error(f"FAIL: {e}")
 
 
 def join_or_leave_Server(
