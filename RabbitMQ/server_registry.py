@@ -3,8 +3,11 @@ import uuid
 import registry_server_pb2
 import community_server_pb2
 
+host = "localhost"
+port = 12001
+
 registered = registry_server_pb2.Server_book()
-connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
 channel = connection.channel()
 
 def registerserver(name, port):

@@ -1,12 +1,13 @@
 import pika
 import uuid
 import sys
+import time
 import registry_server_pb2
 import community_server_pb2
 
 CLIENTELE = community_server_pb2.Clientele()
 MAXCLIENTS = 5
-# ARTICLESLIST = community_server_pb2.ArticleList()
+ARTICLESLIST = community_server_pb2.ArticleList()
 connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
 channel = connection.channel()
 
@@ -27,6 +28,7 @@ def on_request_new(ch, method, props, body):
             client_info_bytes = client_info.SerializeToString()
             CLIENTELE.clients.append(registry_server_pb2.Client_information(id=request.id))
             channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+    
     elif (request.type == "leave"):
         if (registry_server_pb2.Client_information(id=request.id) in CLIENTELE.clients):
             CLIENTELE.clients.remove(registry_server_pb2.Client_information(id=request.id))
@@ -37,10 +39,42 @@ def on_request_new(ch, method, props, body):
             client_info = registry_server_pb2.Success(value=False)
             client_info_bytes = client_info.SerializeToString()
             channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+    
+    else:
+        request_server = community_server_pb2.ArticleRequestFormat()
+        request_server.ParseFromString(body)
+        print(request_server.type)
+        print("First Debug")
+        if (request_server.type == "publish"):
+            print("Second Debug")
+            if (registry_server_pb2.Client_information(id=request_server.client.id) in CLIENTELE.clients):
+                print("Third Debug")
+                type_article = request_server.article.article_type
+                author_article = request_server.article.author
+                time_article = request_server.article.time
+                content_article = request_server.article.content
+
+                article_new = community_server_pb2.Article()
+                if not request_server.article.HasField("article_type"):
+                    return
+                if len(content_article) > 200:
+                    return
+                article_new.article_type = type_article
+                article_new.author = author_article
+                article_new.time = int(time.time())
+                article_new.content = content_article
+                ARTICLESLIST.articles.append(article_new)
+                client_info = registry_server_pb2.Success(value=True)
+                client_info_bytes = client_info.SerializeToString()
+                channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+            else:
+                print("Fourth Debug")
+                client_info = registry_server_pb2.Success(value=False)
+                client_info_bytes = client_info.SerializeToString()
+                channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+    
     for i in CLIENTELE.clients:
-                print(i.id)
-
-
+        print(i.id)
 
 def on_request(ch, method, props, body):
     request = registry_server_pb2.Success()

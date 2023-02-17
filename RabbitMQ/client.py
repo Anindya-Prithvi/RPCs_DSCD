@@ -11,7 +11,8 @@ OPTIONS = """Options:
     2. Subscribe to server
     3. Leave a server
     4. Get article
-Enter your choice[1-4]: """
+    5. Publish article
+Enter your choice[1-5]: """
 
 def just_print_it(ch, method, properties, body):
     request = registry_server_pb2.Success()
@@ -22,8 +23,46 @@ def just_print_it(ch, method, properties, body):
         print("FAILURE\n")
     channel.stop_consuming()
 
+def fetch_server_list(client_id, port):
+    try:
+        client_info = registry_server_pb2.Client_information(id=str(client_id), type="list")
+        client_info_bytes = client_info.SerializeToString()
+        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        print('Sent list request for client {}'.format(client_id))
+        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.start_consuming()
+    except Exception as e:
+        print("Error in fetching server list")
+
+def publish_article(client_id, port):
+    try:
+        request = community_server_pb2.ArticleRequestFormat()
+        request.client.id = str(client_id)
+        request.type = "publish"
+        try:
+            request.article.article_type = getattr(community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: "),)
+        except:
+            print("Invalid article type")
+            return
+        request.article.author = input("Enter author's name: ")
+        if (len(request.article.author) == 0):
+            print("Author's name cannot be empty")
+            return
+        request.article.content = input("Content of the article[<= 200 char]: ")
+        client_info = request
+        client_info_bytes = client_info.SerializeToString()
+        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        print('Sent article request for client {}'.format(client_id))
+        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.start_consuming()
+    except Exception as e:
+        print("Error in publishing article2")
+    
+
+
 def join_or_leave_server(client_id, port, join=True):
-    addr = input("Enter address of server [dom:port]: ")
+    # dom = input("Enter domain of server: ")
+    # port = input("Enter port of server: ")
     if join:
         # channel.queue_declare(queue='join_queue', exclusive=True)
         client_info = registry_server_pb2.Client_information(id=str(client_id), type="join")
@@ -71,6 +110,10 @@ def begin_operation(client_id, port):
                 join_or_leave_server(client_id, port)
             elif val == "3":
                 join_or_leave_server(client_id, port, False)
+            elif val == "4":
+                fetch_article(client_id, port)
+            elif val == "5":
+                publish_article(client_id, port)
             else:
                 print("Invalid choice")
         except EOFError:
