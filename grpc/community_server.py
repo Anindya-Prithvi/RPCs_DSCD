@@ -43,29 +43,29 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             registry_server_pb2.Client_information(id=request.client.id)
             in CLIENTELE.clients
         ):
-            type_article = request.article.article_type
-            author_article = request.article.author
-            time_article = request.article.time
-            print(
-                "The three fields i got are ",
-                type_article,
-                author_article,
-                time_article,
-            )
+
             responselist = []
             for i in ARTICLESLIST.articles:
-                
-                if (
-                    type_article == i.article_type
-                    and author_article == i.author
-                    and time_article < i.time
+                if (not request.article.HasField("article_type")) or (
+                    request.article.article_type == i.article_type
                 ):
-                    responselist.append(i)
+                    pass
+                else:
+                    continue
+                if request.article.author == i.author or request.article.author == "":
+                    pass
+                else:
+                    continue
+                if request.article.time < i.time:
+                    pass
+                else:
+                    continue
+                responselist.append(i)
             return community_server_pb2.ArticleList(articles=responselist)
         else:
             # abort request if not joined
             context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
-    
+
     def PublishArticle(self, request, context):
         # Remember clients are stateless
         logger.info(f"ARTICLE PUBLISH REQUEST FROM {request.client.id}")
@@ -77,22 +77,18 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             author_article = request.article.author
             time_article = request.article.time
             content_article = request.article.content
-            print(
-                "The fields i got are ",
-                type_article,
-                author_article,
-                time_article,
-                content_article
-            )
-            if request.article.time!=0:
+
+            if request.article.time != 0:
                 logger.error("Time is present")
                 context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Time is present")
 
             article_new = community_server_pb2.Article()
             # check if article_type is present in oneof
-            if not article_new.HasField("article_type"):
+            if not request.article.HasField("article_type"):
                 logger.error("Article type not present")
-                context.abort(grpc.StatusCode.INVALID_ARGUMENT, "Article type not present")
+                context.abort(
+                    grpc.StatusCode.INVALID_ARGUMENT, "Article type not present"
+                )
                 return
             article_new.article_type = type_article
             article_new.author = author_article
