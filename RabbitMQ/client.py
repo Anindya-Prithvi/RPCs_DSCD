@@ -1,5 +1,7 @@
 import pika
 import uuid
+import time
+import datetime
 import community_server_pb2
 import registry_server_pb2
 
@@ -23,16 +25,52 @@ def just_print_it(ch, method, properties, body):
         print("FAILURE\n")
     channel.stop_consuming()
 
-def fetch_server_list(client_id, port):
+def article_list(ch, method, properties, body):
+    request = community_server_pb2.ArticleList()
+    request.ParseFromString(body)
+    if (request.success == True):
+        print("Article List:")
+        for article in request.articles:
+            print("Article Type: {}".format(article.article_type))
+            print("Author: {}".format(article.author))
+            print("Time: {}".format(article.time))
+            print("Content: {}".format(article.content))
+            print("")
+        channel.stop_consuming()
+    else:
+        print("FAILURE\n")
+        channel.stop_consuming()
+
+def fetch_article(client_id, port):
     try:
-        client_info = registry_server_pb2.Client_information(id=str(client_id), type="list")
+        request = community_server_pb2.ArticleRequestFormat()
+        request.client.id = str(client_id)
+        request.type = "fetch"
+        try:
+            request.article.article_type = getattr(community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: "),)
+        except:
+            print("Invalid article type")
+        author_name = input("Enter author's name: ")
+        if (len(author_name) == 0):
+            print("Author's name cannot be empty")
+        else :
+            request.article.author = author_name
+        try:
+            date_entry = input('Enter a date in YYYY-MM-DD format: ')
+            year, month, day = map(int, date_entry.split('-'))
+            date1 = datetime.date(year, month, day)
+            request.article.time = date1.strftime("%Y-%m-%d")
+        except:
+            print("Invalid time format, using current time")
+            request.article.time = datetime.datetime.now().strftime("%Y-%m-%d")
+        client_info = request  
         client_info_bytes = client_info.SerializeToString()
         channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
-        print('Sent list request for client {}'.format(client_id))
-        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        print('Sent article request for client {}'.format(client_id))
+        channel.basic_consume(queue='client_server', on_message_callback=article_list)
         channel.start_consuming()
     except Exception as e:
-        print("Error in fetching server list")
+        print("Error in fetching article")
 
 def publish_article(client_id, port):
     try:

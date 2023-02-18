@@ -32,7 +32,7 @@ message Article {
     /// Author of the article (name)
     optional string author = 2;
     /// Timestamp of publication
-    optional int64 time = 3;
+    optional string time = 3;
     /// 200 char string
     optional string content = 4;
 }
@@ -52,6 +52,8 @@ message ArticleFormat {
 message ArticleList {
     /// List of all articles
     repeated Article articles = 1;
+
+    optional bool success = 2;
 }
 
 /// Request and publish format
