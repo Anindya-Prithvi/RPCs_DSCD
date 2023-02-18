@@ -42,6 +42,7 @@ def article_list(ch, method, properties, body):
         channel.stop_consuming()
 
 def fetch_article(client_id, port):
+    dom = input("Enter domain of server: ")
     try:
         request = community_server_pb2.ArticleRequestFormat()
         request.client.id = str(client_id)
@@ -65,14 +66,15 @@ def fetch_article(client_id, port):
             request.article.time = datetime.datetime.now().strftime("%Y-%m-%d")
         client_info = request  
         client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        channel.basic_publish(exchange='', routing_key=str(dom), body=client_info_bytes)
         print('Sent article request for client {}'.format(client_id))
-        channel.basic_consume(queue='client_server', on_message_callback=article_list)
+        channel.basic_consume(queue=str(client_id), on_message_callback=article_list)
         channel.start_consuming()
     except Exception as e:
         print("Error in fetching article")
 
 def publish_article(client_id, port):
+    dom = input("Enter domain of server: ")
     try:
         request = community_server_pb2.ArticleRequestFormat()
         request.client.id = str(client_id)
@@ -89,33 +91,34 @@ def publish_article(client_id, port):
         request.article.content = input("Content of the article[<= 200 char]: ")
         client_info = request
         client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        channel.basic_publish(exchange='', routing_key=str(dom), body=client_info_bytes)
         print('Sent article request for client {}'.format(client_id))
-        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.basic_consume(queue=str(client_id), on_message_callback=just_print_it)
         channel.start_consuming()
     except Exception as e:
         print("Error in publishing article2")
+        print(e)
     
 
 
 def join_or_leave_server(client_id, port, join=True):
-    # dom = input("Enter domain of server: ")
+    dom = input("Enter domain of server: ")
     # port = input("Enter port of server: ")
     if join:
         # channel.queue_declare(queue='join_queue', exclusive=True)
         client_info = registry_server_pb2.Client_information(id=str(client_id), type="join")
         client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        channel.basic_publish(exchange='', routing_key=str(dom), body=client_info_bytes)
         print('Sent join request for client {}'.format(client_id))
-        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.basic_consume(queue=str(client_id), on_message_callback=just_print_it)
         channel.start_consuming()
     else:
         # channel.queue_declare(queue='leave_queue', exclusive=True)
         client_info = registry_server_pb2.Client_information(id=str(client_id), type="leave")
         client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+        channel.basic_publish(exchange='', routing_key=str(dom), body=client_info_bytes)
         print('Sent leave request for client {}'.format(client_id))
-        channel.basic_consume(queue='client_server', on_message_callback=just_print_it)
+        channel.basic_consume(queue=str(client_id), on_message_callback=just_print_it)
         channel.start_consuming()
 
 
@@ -132,13 +135,12 @@ def get_server_list(client_id, port):
     client_info_bytes = client_info.SerializeToString()
     channel.basic_publish(exchange='', routing_key='registry_server', body=client_info_bytes)
     print('Sent get server list request for client {}'.format(client_id))
-    channel.basic_consume(queue='client_server', on_message_callback=handle_server_list_response)
+    channel.basic_consume(queue=str(client_id), on_message_callback=handle_server_list_response)
     channel.start_consuming()
 
 def begin_operation(client_id, port):
     print("From client.py")
-    channel.queue_delete(queue='client_server')
-    channel.queue_declare(queue='client_server')
+    channel.queue_declare(queue=str(client_id))
     while True:
         try:
             val = input(OPTIONS)
@@ -157,6 +159,7 @@ def begin_operation(client_id, port):
         except EOFError:
             break
         except KeyboardInterrupt:
+            channel.queue_delete(queue=str(client_id))
             break
 
 

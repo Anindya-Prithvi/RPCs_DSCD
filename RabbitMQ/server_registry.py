@@ -28,13 +28,13 @@ def on_request(ch, method, props, body):
         if (response.value == True):
             client_info = registry_server_pb2.Success(value=True)
             client_info_bytes = client_info.SerializeToString()
-            channel.basic_publish(exchange='', routing_key='first_server', body=client_info_bytes)
+            channel.basic_publish(exchange='', routing_key=str(request.name), body=client_info_bytes)
     request2 = registry_server_pb2.Client_information()
     request2.ParseFromString(body)
     if (request2.type == "get"):
         client_info = registered
         client_info_bytes = client_info.SerializeToString()
-        channel.basic_publish(exchange='', routing_key='client_server', body=client_info_bytes)
+        channel.basic_publish(exchange='', routing_key=str(request2.id), body=client_info_bytes)
         print("Sent server list to client {}".format(request.name))
 
 def serve():
