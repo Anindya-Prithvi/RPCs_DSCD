@@ -5,9 +5,10 @@ import datetime
 import community_server_pb2
 import registry_server_pb2
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host = 'localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host = 'localhost', heartbeat=1800))
 channel = connection.channel()
 
+dict = {1 : "SPORTS", 2 : "FASHION", 3 : "POLITICS"}
 OPTIONS = """Options:
     1. Get server list
     2. Subscribe to server
@@ -30,12 +31,15 @@ def article_list(ch, method, properties, body):
     request.ParseFromString(body)
     if (request.success == True):
         print("Article List:")
-        for article in request.articles:
-            print("Article Type: {}".format(article.article_type))
+        for i, article in enumerate(request.articles):
+            val = dict[article.article_type + 1]
+            print("{}. Article Type: ".format(i + 1))
+            print(val)
+            # print(type(article.article_type))
             print("Author: {}".format(article.author))
             print("Time: {}".format(article.time))
             print("Content: {}".format(article.content))
-            print("")
+            print("\n")
         channel.stop_consuming()
     else:
         print("FAILURE\n")
@@ -50,10 +54,10 @@ def fetch_article(client_id, port):
         try:
             request.article.article_type = getattr(community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: "),)
         except:
-            print("Invalid article type")
+            print("Invalid article type, defaulting to UNSPECIFIED")
         author_name = input("Enter author's name: ")
         if (len(author_name) == 0):
-            print("Author's name cannot be empty")
+            print("Author's name is empty, defaulting to UNSPECIFIED")
         else :
             request.article.author = author_name
         try:
@@ -72,6 +76,7 @@ def fetch_article(client_id, port):
         channel.start_consuming()
     except Exception as e:
         print("Error in fetching article")
+        print(e)
 
 def publish_article(client_id, port):
     dom = input("Enter domain of server: ")
@@ -124,10 +129,10 @@ def join_or_leave_server(client_id, port, join=True):
 
 def handle_server_list_response(ch, method, properties, body):
     server_list = registry_server_pb2.Server_book()
-    print(server_list)
     server_list.ParseFromString(body)
-    for i in server_list.servers:
-        print(i.name, i.addr + "\n")
+    print("Server List:\n")
+    for i, j in enumerate(server_list.servers):
+        print("{}. {}\n".format(i + 1, j.name))
     channel.stop_consuming()
 
 def get_server_list(client_id, port):

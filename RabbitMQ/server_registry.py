@@ -7,14 +7,14 @@ host = "localhost"
 port = 12001
 
 registered = registry_server_pb2.Server_book()
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, heartbeat=1800))
 channel = connection.channel()
 
 def registerserver(name, port):
     if name in [i.name for i in registered.servers]:
         print("Server name already registered")
         return registry_server_pb2.Success(value=False)
-    print("Join request from {} at port {}".format(name, port))
+    print("Join request from {}".format(name))
     new_server = registered.servers.add()
     new_server.name = name
     new_server.addr = f"localhost:{port}"
@@ -35,14 +35,17 @@ def on_request(ch, method, props, body):
         client_info = registered
         client_info_bytes = client_info.SerializeToString()
         channel.basic_publish(exchange='', routing_key=str(request2.id), body=client_info_bytes)
-        print("Sent server list to client {}".format(request.name))
+        print("Server list request from client {}".format(request.name))
 
 def serve():
-    channel.queue_delete(queue='registry_server')
-    channel.queue_declare(queue="registry_server")
-    channel.basic_consume(queue="registry_server", on_message_callback=on_request)
-    print("Server started, listening for requests")
-    channel.start_consuming()
+    try:
+        channel.queue_delete(queue='registry_server')
+        channel.queue_declare(queue="registry_server")
+        channel.basic_consume(queue="registry_server", on_message_callback=on_request)
+        print("Server started, listening for requests")
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        print("Server stopped")
 
 if __name__ == "__main__":
     serve()

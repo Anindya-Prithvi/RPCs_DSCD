@@ -9,7 +9,7 @@ import community_server_pb2
 CLIENTELE = community_server_pb2.Clientele()
 MAXCLIENTS = 5
 ARTICLESLIST = community_server_pb2.ArticleList()
-connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost", heartbeat=1800))
 channel = connection.channel()
 
 def on_request_new(ch, method, props, body):
@@ -29,6 +29,7 @@ def on_request_new(ch, method, props, body):
         else:
             client_info = registry_server_pb2.Success(value=True)
             client_info_bytes = client_info.SerializeToString()
+            print("Join request from {}".format(request.id))
             CLIENTELE.clients.append(registry_server_pb2.Client_information(id=request.id))
             channel.basic_publish(exchange='', routing_key=str(request.id), body=client_info_bytes)
     
@@ -37,6 +38,7 @@ def on_request_new(ch, method, props, body):
             CLIENTELE.clients.remove(registry_server_pb2.Client_information(id=request.id))
             client_info = registry_server_pb2.Success(value=True)
             client_info_bytes = client_info.SerializeToString()
+            print("Leave request from {}".format(request.id))
             channel.basic_publish(exchange='', routing_key=str(request.id), body=client_info_bytes)
         else:
             client_info = registry_server_pb2.Success(value=False)
@@ -67,7 +69,7 @@ def on_request_new(ch, method, props, body):
                 client_info = registry_server_pb2.Success(value=True)
                 client_info_bytes = client_info.SerializeToString()
                 channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
-                print("Article Published")  
+                print("Article Publish from client: " + request_server.client.id) 
             else:
                 client_info = registry_server_pb2.Success(value=False)
                 client_info_bytes = client_info.SerializeToString()
@@ -91,9 +93,14 @@ def on_request_new(ch, method, props, body):
                     else:
                         continue
                     responses.append(i)
-                client_info = community_server_pb2.ArticleList(articles=responses, success=True)
-                client_info_bytes = client_info.SerializeToString()
-                channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
+                if len(responses) == 0:
+                    client_info = community_server_pb2.ArticleList(articles=responses, success=False)
+                    client_info_bytes = client_info.SerializeToString()
+                    channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
+                else:
+                    client_info = community_server_pb2.ArticleList(articles=responses, success=True)
+                    client_info_bytes = client_info.SerializeToString()
+                    channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
             else:
                 client_info = community_server_pb2.ArticleList(articles=responses, success=False)
                 client_info_bytes = client_info.SerializeToString()
@@ -102,7 +109,6 @@ def on_request_new(ch, method, props, body):
 
 def on_request(ch, method, props, body):
     request = registry_server_pb2.Success()
-    print("I am here")
     request.ParseFromString(body)
     if (request.value == True):
         print("SUCCESS\n")
@@ -111,7 +117,7 @@ def on_request(ch, method, props, body):
 def serve(name, port):
     while True:
         try:
-            option = int(input("Enter 1 to register\nEnter 2 to leave\n"))
+            option = int(input("Enter 1 to register\n"))
             if (option == 1):
                 client_info = registry_server_pb2.Server_information(type="register", name=str(name), addr=str(port))
                 client_info_bytes = client_info.SerializeToString()
@@ -123,7 +129,6 @@ def serve(name, port):
                 channel.start_consuming()
         except KeyboardInterrupt:
             channel.queue_delete(queue=str(name))
-            print("Deleted")
             break
 
             
@@ -140,7 +145,6 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             sys.exit(1)
         serve(name, port)
-        print("Here 2")
     else:
         print("Usage: python server.py <name> <port>")
         sys.exit(1)
