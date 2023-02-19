@@ -220,6 +220,9 @@ if __name__ == "__main__":
         logger.info("Starting server %s on port %d", name, port)
         if register_server(name, "[::1]:" + str(port)):
             logger.info("Server registered")
+        else:
+            logger.info("Server registration failed")
+            sys.exit(1)
         serve(name, port, logger)
     else:
         print("Usage: python community_server.py <name> <port>")
