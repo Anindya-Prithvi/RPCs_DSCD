@@ -15,7 +15,7 @@ import registry_server_pb2 as registry__server__pb2
 import community_server_pb2 as community__server__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x62onus.proto\x1a\x15registry_server.proto\x1a\x16\x63ommunity_server.proto\"0\n\tServerele\x12#\n\x06server\x18\x01 \x03(\x0b\x32\x13.Server_information2\x9b\x01\n\x16ServerServerManagement\x12/\n\nJoinServer\x12\x13.Server_information\x1a\x0c.ArticleList\x12,\n\x0bLeaveServer\x12\x13.Server_information\x1a\x08.Success\x12\"\n\x0c\x44umpArticles\x12\x08.Article\x1a\x08.Successb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x62onus.proto\x1a\x15registry_server.proto\x1a\x16\x63ommunity_server.proto\"1\n\tServerele\x12$\n\x07servers\x18\x01 \x03(\x0b\x32\x13.Server_information2\x9b\x01\n\x16ServerServerManagement\x12/\n\nJoinServer\x12\x13.Server_information\x1a\x0c.ArticleList\x12,\n\x0bLeaveServer\x12\x13.Server_information\x1a\x08.Success\x12\"\n\x0c\x44umpArticles\x12\x08.Article\x1a\x08.Successb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'bonus_pb2', globals())
@@ -23,7 +23,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _SERVERELE._serialized_start=62
-  _SERVERELE._serialized_end=110
-  _SERVERSERVERMANAGEMENT._serialized_start=113
-  _SERVERSERVERMANAGEMENT._serialized_end=268
+  _SERVERELE._serialized_end=111
+  _SERVERSERVERMANAGEMENT._serialized_start=114
+  _SERVERSERVERMANAGEMENT._serialized_end=269
 # @@protoc_insertion_point(module_scope)
