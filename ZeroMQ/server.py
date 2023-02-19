@@ -1,5 +1,5 @@
 import sys, logging
-import time
+import datetime
 import zmq
 from concurrent import futures
 
@@ -36,12 +36,56 @@ class ClientManagement():
 class ArticleManagement():
 
     def publish(self, article):
-        ARTICLESLIST.articles.append(article)
-        return True
+        if(registry_server_pb2.Client_information(id=article.client.id) in CLIENTELE.clients):
+            type_article = article.article.article_type
+            author_article = article.article.author
+            time_article = article.article.time
+            content_article = article.article.content
 
-    def get_articles(self):
-        return ARTICLESLIST
+            article_new = community_server_pb2.Article()
+            if not article.article.HasField("article_type"):
+                return False
+            if len(content_article) > 200:
+                return False
+            article_new.article_type = type_article
+            article_new.author = author_article
+            # article_new.time = int(time.time())
+            article_new.time = datetime.datetime.now().strftime("%Y-%m-%d")
+            article_new.content = content_article
+            ARTICLESLIST.articles.append(article_new)
+            client_info = registry_server_pb2.Success(value=True)
+            client_info_bytes = client_info.SerializeToString()
+            return True
+        
+        else:
+            return False
 
+
+    def get_articles(self,article):
+        if(registry_server_pb2.Client_information(id=article.client.id) in CLIENTELE.clients):
+            responses = []
+            if (registry_server_pb2.Client_information(id=article.client.id) in CLIENTELE.clients):
+                for i in ARTICLESLIST.articles:
+                    if (not article.article.HasField("article_type") or (article.article.article_type == i.article_type)):
+                        pass
+                    else:
+                        continue
+                    if (article.article.author == i.author or article.article.author == ""):
+                        pass
+                    else:
+                        continue
+                    if article.article.time < i.time:
+                        pass
+                    else:
+                        continue
+                    responses.append(i)
+            
+            if(len(responses) == 0):
+                return [False,[]]
+            return [True,responses]
+
+        else:
+            return False
 
 
 def register_server(name, addr):
@@ -108,6 +152,41 @@ def serve(name: str, port: int, logger: logging.Logger):
                         response = registry_server_pb2.Success(value= False)
                         # response.status = "FAILURE"
                         socket.send(response.SerializeToString())
+
+                else:
+                    request_server = community_server_pb2.ArticleRequestFormat()
+                    request_server.ParseFromString(response)
+                    if (request_server.type == "publish"):
+                        # publish the article
+                        article_management = ArticleManagement()
+                        if article_management.publish(request_server):
+                            logger.info("Article published")
+                            # send a success message
+                            response = registry_server_pb2.Success(value= True)
+                            # response.status = "SUCCESS"
+                            socket.send(response.SerializeToString())
+                        else:
+                            logger.info("Article not published")
+                            # send a failure message
+                            response = registry_server_pb2.Success(value= False)
+                            # response.status = "FAILURE"
+                            socket.send(response.SerializeToString())
+
+                    elif (request_server.type == "fetch"):   
+                        # fetch the article
+                        article_management = ArticleManagement()
+                        if article_management.get_articles(request_server)[0]:
+                            logger.info("Article fetched")
+                            # send a success message
+                            response = community_server_pb2.ArticleList(articles=article_management.get_articles(request_server)[1],success=1)
+                            # response.status = "SUCCESS"
+                            socket.send(response.SerializeToString())
+                        else:
+                            logger.info("Article not fetched")
+                            # send a failure message
+                            response = community_server_pb2.ArticleList(success=0)
+                            # response.status = "FAILURE"
+                            socket.send(response.SerializeToString())
 
                 logger.info("Received request: %s", response)
         

@@ -1,5 +1,5 @@
 import logging
-import time
+import datetime
 import zmq
 import uuid
 import community_server_pb2
@@ -14,17 +14,40 @@ OPTIONS = """Options:
     5. Publish article
 Enter your choice[1-5]: """
 
+
+def article_list(body):
+    request = community_server_pb2.ArticleList()
+    request.ParseFromString(body)
+    dict = {1: "SPORTS", 2: "FASHION", 3: "POLITICS"}
+    if (request.success == True):
+        print("Article List:")
+        for i, article in enumerate(request.articles):
+            val = dict[article.article_type + 1]
+            print("{}. Article Type: ".format(i + 1))
+            print(val)
+            # print(type(article.article_type))
+            print("Author: {}".format(article.author))
+            print("Time: {}".format(article.time))
+            print("Content: {}".format(article.content))
+            print("\n")
+    else:
+        logger.info("No articles found")
+        print("FAILURE\n")
+        return
+
+
 def get_articles(logger: logging.Logger, client_id: uuid.UUID):
     ctx = zmq.Context()
     socket = ctx.socket(zmq.REQ)
     addr = input("Enter address of server [tcp://host:port]: ")
-    socket.connect(addr)
+    socket.connect(f'tcp://127.0.0.1:'+addr)
     try:
         req = community_server_pb2.ArticleRequestFormat()
         req.client.id = str(client_id)
+        req.type = "fetch"
         try:
             req.article.article_type = getattr(
-                community_server_pb2.ArticleType, input("Type of article [SPORTS, FASHION, POLITICS]: ")
+                community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: ")
             )
         except:
             logger.warning("Invalid article type, defaulting to UNSPECIFIED")
@@ -35,28 +58,19 @@ def get_articles(logger: logging.Logger, client_id: uuid.UUID):
             req.article.author = author_name
         # convert time in string to int using time
         try:
-            time_lim = time.strptime(
-                input("Enter time [d m Y h:m:s] (Leave blank for current time): "),
-                "%d %m %Y %H:%M:%S",
-            )
-            req.article.time = int(time.mktime(time_lim))
+            date_entry = input('Enter a date in YYYY-MM-DD format: ')
+            year, month, day = map(int, date_entry.split('-'))
+            date1 = datetime.date(year, month, day)
+            req.article.time = date1.strftime("%Y-%m-%d")
         except:
-            logger.error("Invalid time format. Time is needed, using current time")
-            req.article.time = int(time.time())
+            print("Invalid time format, using current time")
+            req.article.time = datetime.datetime.now().strftime("%Y-%m-%d")
 
         socket.send(req.SerializeToString())
         resp_data = socket.recv()
-        response = community_server_pb2.ArticleRequestFormat()
-        response.ParseFromString(resp_data)
-        logger.info(
-            "RECEIVED ARTICLES:\n"
-            + "-------------------------\n".join(
-                [
-                    f"[{community_server_pb2.ArticleType.Name(i.article_type)}]\n{i.author} - {i.time}\n{i.content}\n"
-                    for i in response.articles
-                ]
-            )
-        )
+        response = community_server_pb2.ArticleList()
+        article_list(resp_data)
+
     except Exception as e:
         logger.error(f"FAIL: {e}")
     finally:
@@ -67,10 +81,11 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     addr = input("Enter address of server [ip:port]: ")
-    socket.connect(f"tcp://{addr}")
+    socket.connect(f'tcp://127.0.0.1:'+addr)
 
     req = community_server_pb2.ArticleRequestFormat()
     req.client.id = str(client_id)
+    req.type = "publish"
     try:
         req.article.article_type = getattr(
             community_server_pb2.Article.type,
@@ -80,8 +95,6 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
         logger.error("Invalid article type")
         return
     req.article.author = input("Author of article: ")
-    # throw error if author length is 0
-    # will also be rejected by CS
     if len(req.article.author) == 0:
         logger.error("Author name cannot be empty")
         return
@@ -90,7 +103,7 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
     # Send the request and wait for a response
     socket.send(req.SerializeToString())
     response_bytes = socket.recv()
-    response = community_server_pb2.BooleanValue()
+    response = registry_server_pb2.Success()
     response.ParseFromString(response_bytes)
 
     logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
@@ -140,7 +153,6 @@ def run(client_id: uuid.UUID, logger: logging.Logger):
             elif val == "3":
                 join_or_leave_Server(logger, client_id, False)
             elif val == "4":
-                pass
                 get_articles(logger, client_id)
             elif val == "5":
                 publish_article(logger, client_id)

@@ -29,11 +29,7 @@ class Maintain:
 		new_server.addr = addr
 		return True
 
-	def GetServerList(self, id):
-		logger.info(
-			"SERVER LIST REQUEST FROM %s with id %s",
-			id,
-		)
+	def GetServerList(self):
 		return registered
     
 
@@ -67,13 +63,7 @@ if __name__ == "__main__":
 			# find name and ip of server
 			name = message.split()[1]
 			addr = message.split()[2][6:]
-			print(name, addr)
 			if maintain.RegisterServer(name, addr):
 				socket.send_string("SUCCESS")
 			else:
 				socket.send_string("FAILURE")
-			# print current list of servers
-			print("Current list of servers:")
-			for server in registered.servers:
-				print(server.name, server.addr)
-
