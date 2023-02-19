@@ -97,36 +97,36 @@ def publish_article(logger: logging.Logger, client_id: uuid.UUID):
 
     
 def join_or_leave_Server(logger: logging.Logger, client_id: uuid.UUID, join: bool = True):
-	context = zmq.Context()
-	socket = context.socket(zmq.REQ)
-	addr = input("Enter address of server [ip:port]: ")
-	print(type(addr))
-	socket.connect(f'tcp://127.0.0.1:'+addr)
-        
-	req = community_server_pb2.ClienteleRequest()
-	req.client.id = str(client_id)
-	req.join = join
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    addr = input("Enter address of server [ip:port]: ")
+    print(type(addr))
+    socket.connect(f'tcp://127.0.0.1:'+addr)
+    req = registry_server_pb2.Client_information()
+    req.id = str(client_id)
+    req.type = "join" if join else "leave"
 
-	# Send the request and wait for a response
-	socket.send(req.SerializeToString())
-	response_bytes = socket.recv()
-	response = community_server_pb2.BooleanValue()
-	response.ParseFromString(response_bytes)
+    # Send the request and wait for a response
+    socket.send(req.SerializeToString())
+    response_bytes = socket.recv()
+    print(response_bytes)
+    response = registry_server_pb2.Success()
+    response.ParseFromString(response_bytes)
 
-	logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
+    logger.info(f'{"SUCCESS" if response.value else "FAILURE"}')
     
 
 def getServersfromRegistry(logger: logging.Logger, client_id: uuid.UUID):
-	context = zmq.Context()
-	socket = context.socket(zmq.REQ)
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
     # connect to port 21337
-	socket.connect("tcp://localhost:21337")
+    socket.connect("tcp://localhost:21337")
 
-	request = registry_server_pb2.Client_information(id=str(client_id))
-	socket.send(request.SerializeToString())
-	response_bytes = socket.recv()
-	response = registry_server_pb2.Server_book.FromString(response_bytes)
-	logger.info("RECEIVED SERVER LIST:\n" + "\n".join([f"{i.name} - {i.addr}" for i in response.servers]))
+    request = registry_server_pb2.Client_information(id=str(client_id))
+    socket.send(request.SerializeToString())
+    response_bytes = socket.recv()
+    response = registry_server_pb2.Server_book.FromString(response_bytes)
+    logger.info("RECEIVED SERVER LIST:\n" + "\n".join([f"{i.name} - {i.addr}" for i in response.servers]))
 
 def run(client_id: uuid.UUID, logger: logging.Logger):
     print("Starting client, EOF is EOP; Servers listen on *all* ip")

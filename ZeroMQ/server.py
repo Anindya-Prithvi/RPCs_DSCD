@@ -15,15 +15,17 @@ ARTICLESLIST = community_server_pb2.ArticleList()
 
 class ClientManagement():
     def join(self, client_id):
-        if len(CLIENTELE.clients) < MAXCLIENTS:
-            CLIENTELE.clients.append(client_id)
+        if (registry_server_pb2.Client_information(id=client_id) in CLIENTELE.clients) or (len(CLIENTELE.clients) >= MAXCLIENTS):
+            return False
+        elif len(CLIENTELE.clients) < MAXCLIENTS:
+            CLIENTELE.clients.append(registry_server_pb2.Client_information(id=client_id))
             return True
         else:
             return False
     
     def leave(self, client_id):
-        if client_id in CLIENTELE.clients:
-            CLIENTELE.clients.remove(client_id)
+        if registry_server_pb2.Client_information(id=client_id) in CLIENTELE.clients:
+            CLIENTELE.clients.remove(registry_server_pb2.Client_information(id=client_id))
             return True
         else:
             return False
@@ -63,16 +65,55 @@ def register_server(name, addr):
 def serve(name: str, port: int, logger: logging.Logger):
     while True:
         try:
-            context = zmq.Context()
-            socket = context.socket(zmq.REP)
-            socket.bind(f"tcp://*:{port}")
-            logger.info("Registry server started on port %s", port)
-            if register_server(name, "[::1]:" + str(port)):
-                logger.info("Server registered")
+            # context = zmq.Context()
+            # socket = context.socket(zmq.REP)
+            # socket.bind(f"tcp://*:{port}")
+            # logger.info("Registry server started on port %s", port)
+                # if register_server(name, "[::1]:" + str(port)):
+                #     logger.info("Server registered")
                 response = socket.recv()
-        except KeyboardInterrupt:
-            logger.info("Server shutting down")
-            sys.exit(0)
+                # deserialize the response
+                drresponse = registry_server_pb2.Client_information()
+                drresponse.ParseFromString(response)
+                if (drresponse.type == "join"):
+                    client_id = drresponse.id
+                    # join the client
+                    client_management = ClientManagement()
+                    if client_management.join(client_id):
+                        logger.info("Client joined")
+                        # send a success message
+                        response = registry_server_pb2.Success(value= True)
+                        # response.status = "SUCCESS"
+                        socket.send(response.SerializeToString())
+                    else:
+                        logger.info("Client not joined")
+                        # send a failure message
+                        response = registry_server_pb2.Success(value= False)
+                        # response.status = "FAILURE"
+                        socket.send(response.SerializeToString())
+                
+                elif (drresponse.type == "leave"):
+                    client_id = drresponse.id
+                    # leave the client
+                    client_management = ClientManagement()
+                    if client_management.leave(client_id):
+                        logger.info("Client left")
+                        # send a success message
+                        response = registry_server_pb2.Success(value= True)
+                        # response.status = "SUCCESS"
+                        socket.send(response.SerializeToString())
+                    else:
+                        logger.info("Client not left")
+                        # send a failure message
+                        response = registry_server_pb2.Success(value= False)
+                        # response.status = "FAILURE"
+                        socket.send(response.SerializeToString())
+
+                logger.info("Received request: %s", response)
+        
+        except KeyboardInterrupt as e:
+            logger.info("Shutting down server")
+            break
 
 if __name__ == "__main__":
     # accept command line args name and port
@@ -90,6 +131,11 @@ if __name__ == "__main__":
         logger = logging.getLogger(f"{name}-{port}")
         logger.setLevel(logging.INFO)
         logger.info("Starting server %s on port %d", name, port)
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind(f"tcp://*:{port}")
+        if register_server(name, "[::1]:" + str(port)):
+            logger.info("Server registered")
         serve(name, port, logger)
     else:
         print("Usage: python community_server.py <name> <port>")
