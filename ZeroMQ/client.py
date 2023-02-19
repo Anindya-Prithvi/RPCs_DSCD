@@ -113,7 +113,7 @@ def join_or_leave_Server(logger: logging.Logger, client_id: uuid.UUID, join: boo
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     addr = input("Enter address of server [ip:port]: ")
-    print(type(addr))
+    # print(type(addr))
     socket.connect(f'tcp://127.0.0.1:'+addr)
     req = registry_server_pb2.Client_information()
     req.id = str(client_id)
@@ -122,7 +122,7 @@ def join_or_leave_Server(logger: logging.Logger, client_id: uuid.UUID, join: boo
     # Send the request and wait for a response
     socket.send(req.SerializeToString())
     response_bytes = socket.recv()
-    print(response_bytes)
+    # print(response_bytes)
     response = registry_server_pb2.Success()
     response.ParseFromString(response_bytes)
 

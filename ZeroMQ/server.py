@@ -85,7 +85,7 @@ class ArticleManagement():
             return [True,responses]
 
         else:
-            return False
+            return [False,[]]
 
 
 def register_server(name, addr):
@@ -124,13 +124,13 @@ def serve(name: str, port: int, logger: logging.Logger):
                     # join the client
                     client_management = ClientManagement()
                     if client_management.join(client_id):
-                        logger.info("Client joined")
+                        logger.info("JOIN REQUEST FROM {}".format(client_id))
                         # send a success message
                         response = registry_server_pb2.Success(value= True)
                         # response.status = "SUCCESS"
                         socket.send(response.SerializeToString())
                     else:
-                        logger.info("Client not joined")
+                        logger.info("JOIN REQUEST FROM {}".format(client_id))
                         # send a failure message
                         response = registry_server_pb2.Success(value= False)
                         # response.status = "FAILURE"
@@ -141,13 +141,13 @@ def serve(name: str, port: int, logger: logging.Logger):
                     # leave the client
                     client_management = ClientManagement()
                     if client_management.leave(client_id):
-                        logger.info("Client left")
+                        logger.info("LEAVE REQUEST FROM {}".format(client_id))
                         # send a success message
                         response = registry_server_pb2.Success(value= True)
                         # response.status = "SUCCESS"
                         socket.send(response.SerializeToString())
                     else:
-                        logger.info("Client not left")
+                        logger.info("LEAVE REQUEST FROM {}".format(client_id))
                         # send a failure message
                         response = registry_server_pb2.Success(value= False)
                         # response.status = "FAILURE"
@@ -160,13 +160,13 @@ def serve(name: str, port: int, logger: logging.Logger):
                         # publish the article
                         article_management = ArticleManagement()
                         if article_management.publish(request_server):
-                            logger.info("Article published")
+                            logger.info("ARTICLES PUBLISH FROM {}".format(request_server.client.id))
                             # send a success message
                             response = registry_server_pb2.Success(value= True)
                             # response.status = "SUCCESS"
                             socket.send(response.SerializeToString())
                         else:
-                            logger.info("Article not published")
+                            logger.info("ARTICLES PUBLISH FROM {}".format(request_server.client.id))
                             # send a failure message
                             response = registry_server_pb2.Success(value= False)
                             # response.status = "FAILURE"
@@ -175,20 +175,21 @@ def serve(name: str, port: int, logger: logging.Logger):
                     elif (request_server.type == "fetch"):   
                         # fetch the article
                         article_management = ArticleManagement()
-                        if article_management.get_articles(request_server)[0]:
-                            logger.info("Article fetched")
+                        res = article_management.get_articles(request_server)
+                        if res[0]:
+                            logger.info("ARTICLES REQUEST FROM {}".format(request_server.client.id))
                             # send a success message
                             response = community_server_pb2.ArticleList(articles=article_management.get_articles(request_server)[1],success=1)
                             # response.status = "SUCCESS"
                             socket.send(response.SerializeToString())
                         else:
-                            logger.info("Article not fetched")
+                            logger.info("ARTICLES REQUEST FROM {}".format(request_server.client.id))
                             # send a failure message
                             response = community_server_pb2.ArticleList(success=0)
                             # response.status = "FAILURE"
                             socket.send(response.SerializeToString())
 
-                logger.info("Received request: %s", response)
+                # logger.info("Received request: %s", response)
         
         except KeyboardInterrupt as e:
             logger.info("Shutting down server")
@@ -209,10 +210,14 @@ if __name__ == "__main__":
             sys.exit(1)
         logger = logging.getLogger(f"{name}-{port}")
         logger.setLevel(logging.INFO)
-        logger.info("Starting server %s on port %d", name, port)
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.bind(f"tcp://*:{port}")
+        try:
+            socket.bind(f"tcp://*:{port}")
+        except zmq.error.ZMQError as e:
+            print("Port already in use")
+            sys.exit(1)
+        logger.info("Starting server %s on port %d", name, port)
         if register_server(name, "[::1]:" + str(port)):
             logger.info("Server registered")
         serve(name, port, logger)
