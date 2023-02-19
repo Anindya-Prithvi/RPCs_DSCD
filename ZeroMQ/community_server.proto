@@ -1,0 +1,69 @@
+syntax = "proto3";
+import "registry_server.proto";
+
+/// Join and leaving server
+service ClientManagement {
+    /// Join server based on uuid
+    rpc JoinServer (Client_information) returns (Success);
+    /// Leave server based on uuid
+    rpc LeaveServer (Client_information) returns (Success);
+}
+
+/// List of currently connected clients
+message Clientele {
+    /// List of currently connected clients
+    repeated Client_information clients = 1;
+}
+
+message Article {
+    /// Type of article
+    enum type {
+        /// Article is SPORTS
+        SPORTS = 0;
+        /// Article is FASHION
+        FASHION = 1;
+        /// Article is POLITICS
+        POLITICS = 2;        
+    }
+    
+    oneof _type {
+        type article_type = 1;
+    }
+    /// Author of the article (name)
+    optional string author = 2;
+    /// Timestamp of publication
+    optional string time = 3;
+    /// 200 char string
+    optional string content = 4;
+}
+
+/// Request and publish format
+message ArticleFormat {
+    /// Unnecessary usage of oneof, imo enum should suffice
+    /// Contains the types of articles
+    oneof Type {
+        Article SPORTS = 1;
+        Article FASHION = 2;
+        Article POLITICS = 3;
+    }
+}
+
+/// Like a book of articles
+message ArticleList {
+    /// List of all articles
+    repeated Article articles = 1;
+
+    optional bool success = 2;
+}
+
+/// Request and publish format
+message ArticleRequestFormat {
+    /// Client uuid
+    optional Client_information client = 1;
+
+    /// Unnecessary usage of oneof, imo enum should suffice
+    /// Contains the types of articles
+    optional Article article = 2;
+
+    optional string type = 3;
+}
