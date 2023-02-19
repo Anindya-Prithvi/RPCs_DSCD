@@ -93,14 +93,9 @@ def on_request_new(ch, method, props, body):
                     else:
                         continue
                     responses.append(i)
-                if len(responses) == 0:
-                    client_info = community_server_pb2.ArticleList(articles=responses, success=False)
-                    client_info_bytes = client_info.SerializeToString()
-                    channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
-                else:
-                    client_info = community_server_pb2.ArticleList(articles=responses, success=True)
-                    client_info_bytes = client_info.SerializeToString()
-                    channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
+                client_info = community_server_pb2.ArticleList(articles=responses, success=True)
+                client_info_bytes = client_info.SerializeToString()
+                channel.basic_publish(exchange='', routing_key=str(request_server.client.id), body=client_info_bytes)
             else:
                 client_info = community_server_pb2.ArticleList(articles=responses, success=False)
                 client_info_bytes = client_info.SerializeToString()

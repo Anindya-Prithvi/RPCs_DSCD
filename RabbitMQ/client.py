@@ -51,13 +51,19 @@ def fetch_article(client_id, port):
         request = community_server_pb2.ArticleRequestFormat()
         request.client.id = str(client_id)
         request.type = "fetch"
+        flag = False
         try:
             request.article.article_type = getattr(community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: "),)
         except:
+            flag = True
             print("Invalid article type, defaulting to UNSPECIFIED")
         author_name = input("Enter author's name: ")
         if (len(author_name) == 0):
-            print("Author's name is empty, defaulting to UNSPECIFIED")
+            if (flag == True):
+                print("Both author's name and article type cannot be empty")
+                return
+            else:
+                print("Author's name is empty, defaulting to UNSPECIFIED")
         else :
             request.article.author = author_name
         try:
