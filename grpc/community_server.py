@@ -7,11 +7,40 @@ import registry_server_pb2
 import registry_server_pb2_grpc
 import community_server_pb2
 import community_server_pb2_grpc
+import bonus_pb2
+import bonus_pb2_grpc
 
 CLIENTELE = community_server_pb2.Clientele()
+SERVERELE = bonus_pb2.Serverele()
 ARTICLESLIST = community_server_pb2.ArticleList()
 MAXCLIENTS = 5
 
+def join_server_from_server(name: str, port:int):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = bonus_pb2_grpc.ServerServerManagementStub(channel)
+        response = stub.JoinServer(
+            registry_server_pb2.Server_information(name=name, addr = "[::1]:"+str(port))
+        )
+        logger.info("REMOTE ARTICLES DUMPED")
+        for i in response.articles:
+            if i not in ARTICLESLIST.articles:
+                ARTICLESLIST.articles.append(i)
+                # TODO: dump
+                for j in SERVERELE.servers:
+                    with grpc.insecure_channel(j.addr) as channel2:
+                        stub = bonus_pb2_grpc.ServerServerManagementStub(channel2)
+                        response = stub.DumpArticles(i)
+                        logger.info("DUMPED TO CHILD")
+
+def leave_server_from_server(name: str, port: int):
+    addr = input("Enter address of server [dom:port]: ")
+    with grpc.insecure_channel(addr) as channel:
+        stub = bonus_pb2_grpc.ServerServerManagementStub(channel)
+        response = stub.LeaveServer(
+            registry_server_pb2.Server_information(name=name, addr = "[::1]:"+str(port))
+        )
+        logger.info(f"RECEIVED STATUS: {response}")
 
 class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
     def JoinServer(self, request, context):
@@ -103,10 +132,56 @@ class ClientManagement(community_server_pb2_grpc.ClientManagementServicer):
             article_new.time = int(time.time())
             article_new.content = content_article
             ARTICLESLIST.articles.append(article_new)
+            for j in SERVERELE.servers:
+                with grpc.insecure_channel(j.addr) as channel2:
+                    stub = bonus_pb2_grpc.ServerServerManagementStub(channel2)
+                    response = stub.DumpArticles(article_new)
+                    logger.info("DUMPED TO CHILD")
             return registry_server_pb2.Success(value=True)
         else:
             # abort request if not joined
             context.abort(grpc.StatusCode.UNAUTHENTICATED, "Not joined")
+
+
+class ServerServerManagement(bonus_pb2_grpc.ServerServerManagementServicer):
+    def JoinServer(self, request, context):
+        logger.info(f"JOIN REQUEST FROM {request.name}-{request.addr}")
+        # Assumption duplicacy of server rejected
+        if (
+            registry_server_pb2.Server_information(name=request.name, addr=request.addr)
+            in SERVERELE.servers
+        ):
+            context.abort(grpc.StatusCode.ALREADY_EXISTS, "Rejoined")
+            return
+        # Add server (client) to server
+        SERVERELE.servers.append(
+            registry_server_pb2.Server_information(name=request.name, addr=request.addr)
+        )
+        return ARTICLESLIST
+    
+    def LeaveServer(self, request, context):
+        logger.info(f"LEAVE REQUEST FROM {request.name}-{request.addr}")
+        if (
+            registry_server_pb2.Server_information(name=request.name, addr=request.addr)
+            in SERVERELE.servers
+        ):
+            return registry_server_pb2.Success(value=True)
+        # cannot leave if not joined
+        return registry_server_pb2.Success(value=False)
+    
+    def DumpArticles(self, request, context):
+        logger.info(f"NEW ARTICLE DUMP") # kinda insecure but idc
+        if request not in ARTICLESLIST.articles:
+            for j in SERVERELE.servers:
+                with grpc.insecure_channel(j.addr) as channel2:
+                    stub = bonus_pb2_grpc.ServerServerManagementStub(channel2)
+                    response = stub.DumpArticles(request)
+                    logger.info("DUMPED TO CHILD")
+            ARTICLESLIST.articles.append(request)
+            return registry_server_pb2.Success(value=True)
+        # cannot dump if not joined
+        return registry_server_pb2.Success(value=False)
+        
 
 
 def register_server(name, addr):
@@ -125,6 +200,9 @@ def serve(name: str, port: int, logger: logging.Logger):
     community_server_pb2_grpc.add_ClientManagementServicer_to_server(
         ClientManagement(), server
     )
+    bonus_pb2_grpc.add_ServerServerManagementServicer_to_server(
+        ServerServerManagement(), server
+    )
     server.add_insecure_port("[::]:" + str(port))
     server.start()
     logger.info("Server started, listening on " + str(port))
@@ -136,13 +214,17 @@ def serve(name: str, port: int, logger: logging.Logger):
 
     # server.wait_for_termination()
     logger.info(
-        "Server is running. \n1. Subscribe to another server\n2. Ctrl+C to stop server"
+        "Server is running. \n1. Subscribe to another server\n2. Leave server\n Ctrl+C to stop server"
     )
     while True:
         try:
             choice = int(input())
             if choice == 1:
-                pass
+                join_server_from_server(name, port)
+            elif choice==2:
+                leave_server_from_server(name, port)
+            else:
+                print("Invalid choice")
         except ValueError:
             logger.info("Invalid choice")
         except KeyboardInterrupt:
@@ -151,6 +233,9 @@ def serve(name: str, port: int, logger: logging.Logger):
         except EOFError:
             logger.warning("Running in non interactive mode")
             server.wait_for_termination()
+        except Exception as e:
+            # print error with description and traceback
+            logger.exception(e)
     server.stop(0)
 
 

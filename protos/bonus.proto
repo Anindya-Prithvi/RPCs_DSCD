@@ -16,5 +16,5 @@ service ServerServerManagement {
 /// List of currently connected servers
 message Serverele {
     /// List of currently connected servers
-    repeated Server_information server = 1;
+    repeated Server_information servers = 1;
 }
