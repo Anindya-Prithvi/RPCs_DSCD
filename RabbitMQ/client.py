@@ -93,11 +93,11 @@ def publish_article(client_id, port):
         try:
             request.article.article_type = getattr(community_server_pb2.Article.type, input("Type of article [SPORTS, FASHION, POLITICS]: "),)
         except:
-            print("Invalid article type")
+            print("Invalid article type : FAILED")
             return
         request.article.author = input("Enter author's name: ")
         if (len(request.article.author) == 0):
-            print("Author's name cannot be empty")
+            print("Author's name cannot be empty : FAILED")
             return
         request.article.content = input("Content of the article[<= 200 char]: ")
         client_info = request

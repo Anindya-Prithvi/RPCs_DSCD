@@ -107,6 +107,10 @@ def on_request(ch, method, props, body):
     request.ParseFromString(body)
     if (request.value == True):
         print("SUCCESS\n")
+    else:
+        print("FAILURE\n")
+        channel.queue_delete(queue=str(name))
+        sys.exit(0)
     channel.stop_consuming()
 
 def serve(name, port):
