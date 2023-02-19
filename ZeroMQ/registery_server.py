@@ -29,7 +29,7 @@ class Maintain:
 		new_server.addr = addr
 		return True
 
-	def GetServerList(self):
+	def GetServerList(self,id):
 		return registered
     
 
